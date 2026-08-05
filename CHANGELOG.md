@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.2-alpha] — 2026-08-05
+
+### Changed
+
+- Rename the standalone skill to `roborev-refine-and-polish`.
+- Use `Iteration` consistently and record per-iteration plans and results in a
+  table.
+
+[0.0.2-alpha]: https://github.com/jesserobbins/refine-and-polish/releases/tag/v0.0.2-alpha
+
 ## [0.0.1-alpha] — 2026-06-25
 
 First alpha. Packages the **Robo Refine and Polish** discipline as a standalone,

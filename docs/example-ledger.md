@@ -3,7 +3,7 @@
 This is a real (lightly trimmed) ledger from a short loop, to show the shape
 filled in. It reviewed a small docs-and-config change with two reviewers,
 `claude-code` and `codex`, run as separate jobs each iteration. Read it
-alongside [the skill](../skills/refine-and-polish/SKILL.md) — every section here
+alongside [the skill](../skills/roborev-refine-and-polish/SKILL.md) — every section here
 maps to a section there.
 
 The point it illustrates: **two reviewers caught different real bugs, and the
@@ -24,7 +24,7 @@ was real and refuting what wasn't.**
 
 ## Ledger table
 
-| Iter | Agent | Sev | Location | Type | Status / Commit |
+| Iteration | Agent | Sev | Location | Type | Status / Commit |
 |------|-------|-----|----------|------|-----------------|
 | 1 | claude-code | L | intro link points at a same-page anchor, not the tool's home | NEW | Fixed `71d9cfc` |
 | 1 | claude-code | L | install slug stale after a rename | NEW | Already fixed at HEAD (review ran on a pre-rename SHA) |
@@ -44,7 +44,7 @@ error signature, and the table row is generic, so flattening it in would make
 the cheat-sheet recommend the remedy in cases where it doesn't work; the
 condition lives in prose because it can't survive compression to a row. (2) the
 row ends in a deliberately absolute rule, and diluting that anchor for a Low
-isn't worth it. *Iter N+1 may re-raise this verbatim — that is NOT a loop; the
+isn't worth it. *Iteration N+1 may re-raise this verbatim — that is NOT a loop; the
 convergence criterion is "zero findings outside this pushback list."*
 
 **3.codex.L — "the slash command won't resolve without a separate command
@@ -54,20 +54,21 @@ and the official docs confirm the namespaced form. No code change — adding a
 file to satisfy a confirmed-false flag would manufacture complexity. Recorded as
 a *verified false positive*, distinct from a design-pushback.
 
-## Closing — convergent at iter 3 (budget 3/3)
+## Closing — convergent at Iteration 3 (budget 3/3)
 
-Convergence rests on: **claude-code clean and verified** (iter 3 actively checked
+Convergence rests on: **claude-code clean and verified** (Iteration 3 actively checked
 every CLI flag and path against the live tool), and **codex's one remaining
 finding evidenced-false**. Note the honest caption — codex *did* produce an
-iter-3 finding; it was refuted, not absent. "Zero findings" would have been a
+Iteration 3 finding; it was refuted, not absent. "Zero findings" would have been a
 lie; "one finding, refuted with evidence" is the truth.
 
 **The two-reviewer payoff, concretely:**
 
-- Iter 1: claude-code caught three Lows codex missed.
-- Iter 2: **codex caught one real bug claude-code missed** — a broken
-  invocation instruction that would otherwise have shipped.
-- Iter 3: they split on a refuted claim; the live-tool verification settled it.
+| Iteration | Reviewer results | Findings and decisions | Watch next |
+|-----------|------------------|------------------------|------------|
+| 1 | claude-code caught three Lows codex missed | Fixed or deferred them | Check codex's independent coverage |
+| 2 | **codex caught one real bug claude-code missed** | Fixed the broken invocation instruction | Re-check the command against live tooling |
+| 3 | Reviewers split on a refuted claim; live-tool verification settled it | Recorded the false positive as pushback | Confirm coverage and close |
 
 A single-reviewer loop would have shipped the broken instruction. That is the
 whole argument for running two reviewers as separate jobs and keeping their

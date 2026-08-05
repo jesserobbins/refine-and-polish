@@ -1,7 +1,7 @@
 {
   "name": "refine-and-polish",
   "description": "Discipline for tracking a multi-iteration roborev refine loop in a private ledger — detect regressions, repeats, and loops; defend deliberate pushback; handle a reviewer going offline; decide when to stop.",
-  "version": "0.0.1-alpha",
+  "version": "0.0.2-alpha",
   "author": {
     "name": "Jesse Robbins"
   },

@@ -6,13 +6,13 @@
   },
   "metadata": {
     "description": "Discipline for tracking a multi-iteration roborev refine loop in a private ledger.",
-    "version": "0.0.1-alpha"
+    "version": "0.0.2-alpha"
   },
   "plugins": [
     {
       "name": "refine-and-polish",
       "source": "./",
-      "version": "0.0.1-alpha",
+      "version": "0.0.2-alpha",
       "description": "Track a multi-iteration roborev refine loop in a private ledger — detect regressions, repeats, and loops; defend deliberate pushback; handle a reviewer going offline; decide when to stop."
     }
   ]

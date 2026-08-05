@@ -1,5 +1,5 @@
 ---
-name: refine-and-polish
+name: roborev-refine-and-polish
 description: A discipline for tracking a multi-iteration roborev refine loop in a private ledger so you can detect regressions, repeats, and loops, defend deliberate pushback, handle a reviewer going offline, and decide when to stop. Use whenever running roborev refine for more than a couple of iterations, especially with multiple subscription-backed reviewers (claude-code + codex + pi), and ALWAYS when the user says "loop until convergent", "address every finding", "track progress", "iterate to convergence", or asks for budget/extension reasoning. Layer on top of /roborev-refine — that skill runs the loop; this one supplies the discipline that keeps a long loop honest.
 ---
 
@@ -83,8 +83,8 @@ The file holds these, in this order:
    all agents.
 3. **Open design questions** — anything the loop surfaced that the user
    has decided needs to be answered before the loop can converge.
-4. **Per-iter plan and results** — what you expected to fix this iter,
-   what actually happened, what you're watching for next iter.
+4. **Per-iteration report** — a table recording what you expected to fix,
+   what actually happened, what you decided, and what you're watching next.
 5. **Deliberate-pushback list** — findings you have decided NOT to fix,
    with the reasoning, so a future re-raise is not a loop.
 
@@ -92,9 +92,9 @@ The file holds these, in this order:
 
 The single most load-bearing artifact. Columns:
 
-| Iter | Agent | Sev | Location | Type | Status / Commit |
+| Iteration | Agent | Sev | Location | Type | Status / Commit |
 
-- **Iter** — `1`, `2`, … or `pre` for findings that were already on
+- **Iteration** — `1`, `2`, … or `pre` for findings that were already on
   `main` before the branch and got picked up incidentally. Use a letter
   suffix (`1b`) for an extra or retry review that lands inside the same
   iteration — a reviewer coming back online, a re-run under a different
@@ -102,30 +102,30 @@ The single most load-bearing artifact. Columns:
 - **Agent** — roborev's agent name: `claude-code`, `codex`, `pi`.
   This matters because agents disagree, and "claude-code flagged X but
   codex didn't" is itself signal. Record the **roborev job id** for each
-  agent's run in the per-iter results (e.g. "claude-code, job 699") — it
+  agent's run in the per-iteration results (e.g. "claude-code, job 699") — it
   is the index back into `roborev log <job>` and `roborev show <job>`;
   the ledger row stays a one-line distillation, the job is the full text.
 - **Sev** — `H`, `M`, `L`, or `—` for a non-finding row (an agent that
-  errored / was unavailable this iter — record it so the coverage gap is
+  errored / was unavailable this iteration — record it so the coverage gap is
   visible, not silent). Bold the High rows.
 - **Location** — file + symbol or short description. Specific enough
-  that the next iter's reviewer output can be matched against it
+  that the next iteration's reviewer output can be matched against it
   without rereading the diff.
 - **Type** — `NEW`, `PRE` (pre-existing on main), `REGRESSION of
-  <iter>.<agent>.<sev>` with the closing commit, or `REPEAT of <…>`.
+  <iteration>.<agent>.<sev>` with the closing commit, or `REPEAT of <…>`.
   The type column is what the discipline depends on; do not skip it.
 - **Status / Commit** — `Fixed <sha>`, `Fixed <sha> (+ regression
   test)`, `Deferred (see pushback list)`, or `Escalated to user`.
 
-A few filled-in rows show the shape — a regression caught two iters
+A few filled-in rows show the shape — a regression caught two iterations
 later, a reviewer offline for an iteration, a finding sent to the
 pushback list:
 
-| Iter | Agent | Sev | Location | Type | Status / Commit |
+| Iteration | Agent | Sev | Location | Type | Status / Commit |
 |------|-------|-----|----------|------|-----------------|
 | 1 | claude-code | **H** | `auth.py` token refresh races | NEW | Fixed `a1b2c3d` |
 | 1 | codex | M | `cache.py` unbounded key growth | NEW | Deferred (see pushback list) |
-| 2 | claude-code | — | (agent unavailable — auth rejection) | — | Waived this iter |
+| 2 | claude-code | — | (agent unavailable — auth rejection) | — | Waived this iteration |
 | 2 | codex | M | `auth.py` refresh now drops on 401 | REGRESSION of 1.claude-code.H | Fixed `e4f5a6b` (+ regression test) |
 | 3 | codex | L | `cache.py` unbounded key growth | REPEAT of 1.codex.M | No change — see pushback list |
 
@@ -140,23 +140,23 @@ ledger lies.
 
 - **NEW** — first time this finding has appeared anywhere in the
   loop.
-- **REGRESSION of `<iter>.<agent>.<sev>`** — *my fix in a prior iter
+- **REGRESSION of `<iteration>.<agent>.<sev>`** — *my fix in a prior iteration
   caused this*. Same code path, broken in a new way. The fix needs a
   regression test at the boundary that broke. If you keep regressing
   the same area, slow down (smaller commits, paired tests).
-- **REPEAT of `<iter>.<agent>.<sev>`** — same symptom at the same
+- **REPEAT of `<iteration>.<agent>.<sev>`** — same symptom at the same
   location as a finding you already fixed. This is a *defend* signal,
   not a re-fix signal. Either the prior fix didn't actually land, the
   reviewer is seeing a snapshot that predates the fix, or the
   reviewer is wrong. Investigate before changing code.
-- **LOOP** — finding closed in iter N reappears identically in iter
+- **LOOP** — finding closed in Iteration N reappears identically in Iteration
   N+1. This is how you discover that your fix and the reviewer's
   expectation disagree on what "fixed" means. Stop fixing and
   reconcile, usually by writing a more pointed test or by moving the
   finding to the deliberate-pushback list with explicit reasoning.
 
-Why the distinction matters: a regression rate above ~30% iter-to-
-iter says your commits are too coarse and need paired tests at the
+Why the distinction matters: a regression rate above ~30% iteration-to-
+iteration says your commits are too coarse and need paired tests at the
 regression boundary. A repeat says you should be defending, not
 patching. A loop says the *meaning* of the finding is unsettled and
 more code won't help.
@@ -168,7 +168,7 @@ is codex's CLI rejecting under a ChatGPT-account plan, but any reviewer
 can error out. This is the single most common way the loop's assumptions
 break, so handle it explicitly instead of quietly dropping to one agent:
 
-1. **Record it as a row** — `—` severity, "agent unavailable this iter,"
+1. **Record it as a row** — `—` severity, "agent unavailable this iteration,"
    with the actual error (auth rejection, harness incompat). The coverage
    gap belongs in the ledger, not just in your head.
 2. **First check for a subscription-only restore.** A `400 ... <model> not
@@ -215,7 +215,7 @@ bottom of the ledger file, with:
   about the code (state of this branch / contract / call sites) and
   one about future direction (what the next planned change does to
   this surface).
-- An explicit note: *"Iter N+1 is expected to re-raise this verbatim.
+- An explicit note: *"Iteration N+1 is expected to re-raise this verbatim.
   That is NOT a loop; convergence criterion is 'zero findings outside
   the deliberate-pushback list.'"*
 
@@ -244,7 +244,7 @@ patterns. Default is fix; pushback is the exception.
 State it explicitly at the top of the ledger and don't move it
 mid-loop. The default that's worked in practice is:
 
-> Iter N produces zero High/Medium and zero Low findings from any
+> Iteration N produces zero High/Medium and zero Low findings from any
 > agent, **or** the only remaining findings are on the deliberate-
 > pushback list documented in this file.
 
@@ -278,43 +278,39 @@ continue**. Reassess:
   to cap at 10), and record the extension decision in the ledger so
   the trajectory is visible.
 - If the same finding has been fixed and re-flagged across three
-  consecutive iters → that's a loop; escalate to the user with the
-  per-iter trajectory. More iterations will not help.
+  consecutive iterations → that's a loop; escalate to the user with the
+  per-iteration trajectory. More iterations will not help.
 - If the regression rate is trending up across extended iters → slow
   down. Smaller commits. Paired regression-boundary tests. A worse
-  trajectory at iter 7 than at iter 3 means the loop is no longer
+  trajectory at Iteration 7 than at Iteration 3 means the loop is no longer
   converging.
 
 **The Low tail — why budget, not "is the Low surface empty," is the
 stop rule.** A motivated reviewer re-reviewing the previous batch's fixes
-produces a roughly steady stream of *new* Lows every iter (one observed
+produces a roughly steady stream of *new* Lows every iteration (one observed
 run: 5 → 3 → 4 → 4). These are not REPEATs and not regressions — they are
 a genuinely unbounded supply, because each fix is itself new surface to
 critique. Tell-tale sign: the reviewer's own suggested one-liner would
-draw the next iter's finding (a `(x or "").strip()` that still throws on a
+draw the next iteration's finding (a `(x or "").strip()` that still throws on a
 non-string `x`). When H/M is clean and only this Low tail remains, stop on
 the **budget**, and say so plainly in the closing — "convergent at the
 iteration budget; the remaining Lows are a reviewer tail, not an
 exhausted surface," not "no Lows remain." Honest budget stop beats a false
 "clean" claim.
 
-## Per-iter sections
+## Per-iteration reporting
 
-Each iteration gets its own section in the ledger file. Two
-subsections:
+Record one row per iteration in the private ledger, using this table:
 
-- **Iter N plan** — written *before* re-running the reviewers. List
-  what's expected NOT to recur (everything you fixed last iter), what
-  you'll watch for (the regression hazards introduced by this iter's
-  commits), and any pushback re-raise you're predicting. Writing this
-  before the run is what lets you tell genuine new findings from
-  expected re-raises.
-- **Iter N results** — populated as reviewer outputs land, with each
-  agent's job id. Per-commit reviews and branch-level reviews go in
-  distinct subsubsections. An extra review inside the iter (a reviewer
-  retry, a re-run) is a `1b`-style sub-iteration, not iter N+1. The
-  ledger table at the top is updated *as part of writing this section*,
-  not after.
+| Iteration | Plan | Reviewer results | Findings and decisions | Watch next |
+|-----------|------|------------------|------------------------|------------|
+| 1 | What you expect to fix and what should not recur | Job IDs, reviewers, and concise results | Findings fixed, deferred, refuted, or escalated | Regression hazards and expected re-raises |
+
+Write the plan before re-running the reviewers. Add the results as they land,
+including each agent's job id. Per-commit reviews and branch-level reviews go
+in the same row. An extra review inside an iteration (a reviewer retry or a
+re-run) is a `1b`-style sub-iteration, not a new iteration. Update the ledger
+table as part of writing the report row, not afterward.
 
 When you act on a finding:
 
@@ -322,7 +318,7 @@ When you act on a finding:
   suggested one-liner is a hint, not a patch to paste. If its fix would
   still fail a neighboring case, fix the actual surface (and add the test
   that the one-liner would have missed). Pasting the literal suggestion is
-  how you manufacture the next iter's finding. See
+  how you manufacture the next iteration's finding. See
   superpowers:receiving-code-review.
 - **Verify-flagged findings.** When a reviewer says "verify, not a
   confirmed bug," *verify it* — read the call sites, confirm or refute —
@@ -334,9 +330,9 @@ When you act on a finding:
 
 Deferred Lows you still want done after the loop closes land as a **single
 follow-up commit, explicitly not a refine iteration** — no re-review, no
-new ledger iter. Note it in the closing ("deferred Lows landed in `<sha>`
+new ledger iteration. Note it in the closing ("deferred Lows landed in `<sha>`
 post-convergence; not a 4th iteration") so the trajectory stays honest:
-the loop converged at iter N, and this is cleanup on top, not evidence the
+the loop converged at Iteration N, and this is cleanup on top, not evidence the
 loop should have run longer.
 
 ## Workflow
@@ -345,21 +341,21 @@ loop should have run longer.
    subscription reviewers are live. Create the ledger file: header (with
    the live-reviewer line), the convergence criterion, an empty ledger
    table, and (if you already know of any) the deliberate-pushback list.
-   Commit the file before iter 1 starts.
-2. **Run iter 1** via `/roborev-refine` (or its underlying commands).
+   Commit the file before Iteration 1 starts.
+2. **Run Iteration 1** via `/roborev-refine` (or its underlying commands).
    When findings land, add a row per finding to the ledger. Type each
-   one (NEW or PRE for iter 1).
-3. **Before each subsequent iter** — write the "Iter N plan" section.
+   one (NEW or PRE for Iteration 1).
+3. **Before each subsequent iteration** — write the next report row's plan.
    This forces you to predict the run instead of just consuming it.
-4. **After each iter** — fill in the results, type each finding,
-   update the ledger table, and (if convergence is in sight) check
-   the criterion before starting iter N+1.
+4. **After each iteration** — fill in the results, type each finding,
+   update the ledger and report tables, and (if convergence is in sight)
+   check the criterion before starting the next iteration.
 5. **At convergence or budget exhaustion** — write a closing section.
    For convergence: list the pushback findings that justified stopping,
    the H/M trajectory, and a reviewer-coverage caveat if any reviewer
-   was down. For exhaustion: per-iter trajectory + what's still
+   was down. For exhaustion: the iteration-by-iteration table + what's still
    surfacing, ready to surface to the user.
-6. **Commit the ledger file at every iter boundary.** This is private
+6. **Commit the ledger file at every iteration boundary.** This is private
    notes, not public artifacts; commits cost nothing and the
    reconstructable trajectory is the whole point.
 
@@ -371,7 +367,7 @@ loop should have run longer.
 - Don't link to the ledger file from a public PR or commit message.
   That leaks the path and the private repo's existence. If a finding
   needs public discussion, write it up fresh in the PR.
-- Don't retroactively rewrite past iter sections. If a prior call was
+- Don't retroactively rewrite past iteration rows. If a prior call was
   wrong, append a correction — the trajectory is the diagnostic.
 - Don't move a finding from "deliberate pushback" to "fixed" without
   noting why the prior reasoning no longer applies. Changing your
@@ -393,7 +389,7 @@ loop should have run longer.
 | Reviewer says "verify, not a bug" | verify it, record the result (no-change is valid) |
 | Reviewer hands you a one-liner fix | fix the surface, not the literal line |
 | H/M clean, Lows keep dripping | budget stop; caption it as a reviewer tail, not "no Lows left" |
-| Deferred Lows you still want done | single follow-up commit, not a refine iter; no re-review |
+| Deferred Lows you still want done | single follow-up commit, not a refine iteration; no re-review |
 
 ## See also
 

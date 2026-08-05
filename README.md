@@ -1,6 +1,6 @@
 # Robo Refine and Polish
 
-> **Status: `0.0.1-alpha`.** Early release. The discipline is real and
+> **Status: `0.0.2-alpha`.** Early release. The discipline is real and
 > battle-tested in practice, but the packaging is new: the two-step install
 > below follows the documented plugin-marketplace flow and matches working
 > plugins, but hasn't been run end-to-end by a fresh user yet. Expect rough
@@ -57,7 +57,7 @@ marketplace, then install the plugin:
 
 The skill activates automatically when relevant — when you run a multi-iteration
 roborev refine loop — and you can also invoke it explicitly with
-`/refine-and-polish:refine-and-polish` (plugin skills are namespaced by plugin).
+`/refine-and-polish:roborev-refine-and-polish` (plugin skills are namespaced by plugin).
 
 ## Quickstart: your first loop
 
@@ -69,7 +69,7 @@ steps; you don't have to memorize them.
 roborev check-agents
 
 # 2. Create the ledger (private notes — never committed to a public repo):
-#    header, convergence criterion, an empty table. The skill writes this for you.
+#    header, convergence criterion, and empty tables. The skill writes these for you.
 
 # 3. Iteration 1 — run each reviewer as its own job, same scope:
 roborev review --branch --agent claude-code --wait
@@ -78,8 +78,8 @@ roborev review --branch --agent codex --wait
 # 4. Add one row per finding to the ledger and TYPE each one
 #    (NEW / REGRESSION / REPEAT / LOOP). Fix what's real; defend what isn't.
 
-# 5. Before each next iteration, write the "Iter N plan" — predict the run.
-#    Re-review, update the table, check the convergence criterion. Repeat.
+# 5. Before each next iteration, add an "Iteration N" report row — predict the run.
+#    Re-review, update the tables, check the convergence criterion. Repeat.
 ```
 
 You stop when an iteration produces zero findings outside the deliberate-pushback
@@ -98,7 +98,7 @@ iteration before you run it, and writing an honest closing when the loop
 converges or hits its budget.
 
 For the full discipline, read
-[`skills/refine-and-polish/SKILL.md`](./skills/refine-and-polish/SKILL.md); for a
+[`skills/roborev-refine-and-polish/SKILL.md`](./skills/roborev-refine-and-polish/SKILL.md); for a
 filled-in loop, read the [worked example](./docs/example-ledger.md).
 
 ## Known limitations (alpha)
