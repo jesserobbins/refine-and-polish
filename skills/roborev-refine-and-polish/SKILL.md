@@ -34,6 +34,16 @@ keyed to roborev's job ids, agent names, and Pass/Fail verdicts. See the
 roborev, the ledger discipline still reads as a methodology, but the commands in
 this skill won't run.
 
+## Scope: reviewer output only, not arbitrary third-party text
+
+This skill only ever ingests roborev review findings — text roborev's
+reviewer agents generate from *this repo's* code diffs and job logs, via
+explicit commands (`roborev review`, `roborev log <job>`, `roborev show
+<job>`) that name a specific job id. It does not monitor, poll, or consume
+any outsider-authored feed, queue, or free-text channel (issue trackers,
+chat, email, web content). The ledger records reviewer verdicts, not
+arbitrary third-party input.
+
 ## Reviewers are subscription-backed agents
 
 The reviewers are roborev's local agent CLIs, each on its own subscription:
