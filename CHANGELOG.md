@@ -4,6 +4,18 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-08-13
+
+### Changed
+
+- Rewrote the README to lead with who the skill is for, what it does, and
+  how it works, with a concrete example pulled from the worked example.
+- Replaced "discipline" throughout the README, the skill (including its
+  triggering description), the changelog, and the plugin manifests with
+  plainer language: this is a skill that enhances roborev, not a
+  discipline layered on top of it.
+- Renamed the skill's "Type discipline" section to "Type rules".
+
 ## [0.1.0] - 2026-08-13
 
 This is the first release out of alpha. The two-step marketplace install has
@@ -32,18 +44,19 @@ been run end to end.
 - Use `Iteration` consistently and record per-iteration plans and results in a
   table.
 
+[0.2.0]: https://github.com/jesserobbins/refine-and-polish/releases/tag/v0.2.0
 [0.1.0]: https://github.com/jesserobbins/refine-and-polish/releases/tag/v0.1.0
 [0.0.2-alpha]: https://github.com/jesserobbins/refine-and-polish/releases/tag/v0.0.2-alpha
 
 ## [0.0.1-alpha] - 2026-06-25
 
 This is the first alpha release. It packages the **Robo Refine and Polish**
-discipline as a standalone, self-installing Claude Code plugin.
+skill as a standalone, self-installing Claude Code plugin.
 
 ### Added
 
 - The `refine-and-polish` skill (`skills/refine-and-polish/SKILL.md`), which
-  holds the full discipline for tracking a multi-iteration roborev refine loop
+  holds the full method for tracking a multi-iteration roborev refine loop
   in a private ledger: typed findings (`NEW` / `REGRESSION` / `REPEAT` /
   `LOOP`), the deliberate-pushback list, reviewer-coverage caveats, an
   explicit convergence criterion and iteration budget, and the honest "budget
@@ -59,8 +72,8 @@ discipline as a standalone, self-installing Claude Code plugin.
 
 - The two-step marketplace install matches the documented plugin flow and known
   working plugins. No new user tested it from start to finish.
-- Requires the [roborev](https://roborev.io) CLI. This discipline works as a layer
-  on top of roborev, not as a standalone tool.
+- Requires the [roborev](https://roborev.io) CLI. This skill enhances
+  roborev. It does not work as a standalone tool.
 - Assumes subscription-backed reviewers. The "reviewer unavailable" handling
   refuses API-key fallback on purpose.
 

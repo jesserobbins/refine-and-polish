@@ -1,6 +1,6 @@
 ---
 name: roborev-refine-and-polish
-description: A discipline for tracking a multi-iteration roborev refine loop in a private ledger so you can detect regressions, repeats, and loops, defend deliberate pushback, handle a reviewer going offline, and decide when to stop. Use whenever running roborev refine for more than a couple of iterations, especially with multiple subscription-backed reviewers (claude-code + codex + pi), and ALWAYS when the user says "loop until convergent", "address every finding", "track progress", "iterate to convergence", or asks for budget/extension reasoning. Layer on top of /roborev-refine: that skill runs the loop, and this one supplies the discipline that keeps a long loop honest.
+description: A skill for tracking a multi-iteration roborev refine loop in a private ledger so you can detect regressions, repeats, and loops, defend deliberate pushback, handle a reviewer going offline, and decide when to stop. Use whenever running roborev refine for more than a couple of iterations, especially with multiple subscription-backed reviewers (claude-code + codex + pi), and ALWAYS when the user says "loop until convergent", "address every finding", "track progress", "iterate to convergence", or asks for budget/extension reasoning. Layer on top of /roborev-refine: that skill runs the loop, and this one supplies the structure that keeps a long loop honest.
 ---
 
 # Robo Refine and Polish
@@ -28,12 +28,11 @@ If the loop is one quick iteration, this skill is overhead. Skip it.
 
 This skill assumes that [roborev](https://roborev.io) (continuous code
 review for AI coding agents) and its `/roborev-refine` command are
-installed and configured. roborev is the loop runner that this discipline
-sits on top of.
+installed and configured. roborev is the loop runner this skill enhances.
 The ledger uses roborev's job ids, agent names, and Pass/Fail verdicts as
 keys. See the [installation guide](https://roborev.io/installation/) to set
-it up. Without roborev, the ledger discipline still reads as a methodology,
-but the commands in this skill do not run.
+it up. Without roborev, the ledger method still makes sense to read, but
+the commands in this skill do not run.
 
 ## Scope: reviewer output only, not arbitrary third-party text
 
@@ -130,7 +129,7 @@ This table is the most load-bearing artifact in the ledger. Columns:
   without rereading the diff.
 - **Type**: `NEW`, `PRE` (pre-existing on main), `REGRESSION of
   <iteration>.<agent>.<sev>` with the closing commit, or `REPEAT of <…>`.
-  The discipline in this skill depends on the type column. Do not skip it.
+  This skill depends on the type column. Do not skip it.
 - **Status / Commit**: `Fixed <sha>`, `Fixed <sha> (+ regression
   test)`, `Deferred (see pushback list)`, or `Escalated to user`.
 
@@ -150,7 +149,7 @@ Each project's `reviews/` directory accumulates these files over time.
 Reading a recent one, in the project that you are working in, is the
 fastest way to see a full loop's worth of rows in context.
 
-## Type discipline: regression vs repeat vs loop
+## Type rules: regression vs repeat vs loop
 
 These three words are not interchangeable. Get them right or the
 ledger lies.
@@ -406,7 +405,7 @@ top is not evidence that the loop needed to run longer.
 | Run two reviewers | `roborev review --branch --agent claude-code` and `--agent codex`, separate jobs |
 | Reviewer errored / auth-broke | `N/A` row, "unavailable"; one retry as `1b`; waive + coverage caveat. **No API key.** |
 | roborev verdict = Fail, only Lows | roborev fails on any finding; your criterion governs, not its verdict |
-| Typing a recurrence | `REGRESSION` (your fix broke it) / `REPEAT` (defend) / `LOOP` (reconcile), see Type discipline |
+| Typing a recurrence | `REGRESSION` (your fix broke it) / `REPEAT` (defend) / `LOOP` (reconcile), see Type rules |
 | Reviewer says "verify, not a bug" | verify it, record the result (no-change is valid) |
 | Reviewer hands you a one-liner fix | fix the surface, not the literal line |
 | H/M clean, Lows keep dripping | budget stop; caption it as a reviewer tail, not "no Lows left" |

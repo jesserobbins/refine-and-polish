@@ -1,121 +1,99 @@
 # Robo Refine and Polish
 
-> **Status: `0.1.0`.** The discipline is proven and tested in practice, and
-> the two-step marketplace install has been run end to end. Feedback is
+This is for anyone who commits to open source and wants to hold a high
+quality bar before merging.
+
+It's a Claude Code skill that enhances [roborev](https://roborev.io) with an
+adversarial loop: review, fix, re-review, and keep going until independent
+reviewers stop finding real problems. A private ledger tracks every issue
+and every change along the way, so the loop actually converges instead of
+going in circles.
+
+> **Status: `0.1.0`.** The skill is proven and tested in practice, and the
+> two-step marketplace install has been run end to end. Feedback is
 > welcome.
 
-A Claude Code skill that keeps a long [`roborev`](https://roborev.io) refine loop
-honest.
+## The problem it solves
 
-`/roborev-refine` runs the review, fix, and re-review cycle. **Robo Refine
-and Polish** adds the bookkeeping that turns this cycle into a process that
-converges. A private ledger tracks every finding across iterations and
-reviewer agents. The ledger lets you tell a regression from a repeat from a
-loop. It lets you defend a deliberate design choice without arguing it
-again each iteration. It lets you handle a reviewer that goes offline
-without a false claim of full coverage. It helps you decide, with honesty,
-when to stop.
+A long review-fix-review loop sounds simple, but without bookkeeping it
+falls apart in familiar ways. You "fix" the same finding twice because
+nobody remembers it already came up. You miss a regression you introduced
+two iterations back. You re-argue a design decision every time a new
+reviewer run can't see the reasoning from last time.
 
-Without the ledger, a long loop causes problems. You fix the same finding
-three times. You miss a regression that you introduced two iterations ago.
-You re-argue a decision that the next agent run cannot see.
+The ledger is what stops all three. It's a plain Markdown file, kept
+alongside your private notes, that records:
 
-## What it gives you
+- **Every finding, typed.** Each one gets marked `NEW`, `REGRESSION`,
+  `REPEAT`, or `LOOP`, so you can immediately tell "this is new" from "I
+  already fixed this and it broke again."
+- **A pushback list.** When you deliberately decide not to fix something,
+  you write down why, once. When the reviewer raises it again next
+  iteration, that's expected, not a failure.
+- **Coverage caveats.** If a reviewer goes offline mid-loop, the ledger
+  says so, out loud. It never quietly drops to one agent and calls it full
+  coverage.
+- **A real stop condition.** You're done when an iteration comes back with
+  zero findings outside the pushback list, or when you hit an honest
+  budget stop on a tail of small, low-severity nitpicks.
 
-- **A typed ledger table**: one row per finding, across all iterations and
-  all reviewer agents. A `Type` column forces the distinction between `NEW`,
-  `REGRESSION`, `REPEAT`, and `LOOP`.
-- **Multi-reviewer discipline.** `claude-code`, `codex`, and `pi` run as
-  separate jobs. If one reviewer flags an issue and another does not, that
-  difference stays visible as signal.
-- **A deliberate-pushback list**, the mechanism that lets a multi-agent loop
-  converge when reviewers cannot see prior turns. A defended decision stops
-  the loop from repeating without end.
-- **An explicit convergence criterion and iteration budget**, including the
-  honest "budget stop" for an unbounded tail of Low-severity findings.
-- **Coverage caveats**: when a subscription reviewer goes down, the ledger
-  records the limitation. It never drops silently to one agent.
+In the [worked example](./docs/example-ledger.md), running two reviewers
+instead of one is what catches a real bug: `codex` flags a broken slash
+command that `claude-code` missed entirely. With a single reviewer, that
+bug ships. That disagreement between reviewers is the whole point, and the
+ledger is what keeps it from getting lost.
+
+## How it works
+
+```sh
+roborev check-agents                                  # which reviewers are live
+roborev review --branch --agent claude-code --wait
+roborev review --branch --agent codex --wait
+```
+
+1. Run each reviewer as its own job, against the same branch.
+2. Log every finding in the ledger, typed and dated.
+3. Fix the real findings. Defend, in writing, the ones you won't fix.
+4. Re-review. Repeat until findings run out or you hit your iteration
+   budget.
+
+Read the [worked example](./docs/example-ledger.md) to see a real
+three-iteration loop, ledger and all. Read the
+[full skill](./skills/roborev-refine-and-polish/SKILL.md) for every rule
+behind it.
 
 ## Requirements
 
-This skill builds on **[roborev](https://roborev.io)** (continuous code review
-for AI coding agents) and its `/roborev-refine` loop. roborev is the loop
-runner that this discipline sits on top of. The ledger uses roborev's job
-IDs, agent names, and Pass/Fail verdicts as keys. Install roborev first (see
-the [roborev installation guide](https://roborev.io/installation/) and
-[quick start](https://roborev.io/quickstart/)). Without roborev, the
-methodology still applies, but the commands in this skill do not run.
+This skill sits on top of [roborev](https://roborev.io), continuous code
+review for AI coding agents. Install roborev first: see its
+[installation guide](https://roborev.io/installation/) and
+[quick start](https://roborev.io/quickstart/). Without roborev, this skill's
+methodology still makes sense to read, but its commands won't run.
 
 ## Installation
 
-This repo is its own plugin marketplace. Install it in two steps: add the
-marketplace, then install the plugin.
+This repo is its own plugin marketplace, so installing it is two commands.
 
 ```sh
 /plugin marketplace add jesserobbins/refine-and-polish
 /plugin install refine-and-polish@refine-and-polish
 ```
 
-The skill activates automatically when you run a multi-iteration roborev
-refine loop. You can also invoke it directly with
-`/refine-and-polish:roborev-refine-and-polish`. Plugin skills use this
-namespaced form.
-
-## Quickstart: your first loop
-
-After installation, a two-reviewer loop looks like this. The skill drives
-these steps. You do not have to memorize them.
-
-```sh
-# 1. See which subscription reviewers are live, then record them in the ledger header.
-roborev check-agents
-
-# 2. Create the ledger (private notes, never committed to a public repo):
-#    header, convergence criterion, and empty tables. The skill writes these for you.
-
-# 3. Iteration 1: run each reviewer as its own job, same scope:
-roborev review --branch --agent claude-code --wait
-roborev review --branch --agent codex --wait
-
-# 4. Add one row per finding to the ledger and TYPE each one
-#    (NEW / REGRESSION / REPEAT / LOOP). Fix what's real; defend what isn't.
-
-# 5. Before each next iteration, add an "Iteration N" report row that predicts the run.
-#    Re-review, update the tables, check the convergence criterion. Repeat.
-```
-
-You stop the loop when an iteration produces zero findings outside the
-deliberate-pushback list. You also stop when you reach your iteration
-budget. In that case, describe the remaining tail of Low-severity findings
-with honesty. See the [worked example](./docs/example-ledger.md) for a
-three-iteration loop with a filled-in ledger, a pushback entry, and an
-honest convergence caption.
-
-## Usage
-
-If a refine loop runs for more than two iterations, use this skill. Use it
-especially with two or more reviewer agents. Also use it when someone asks
-you to "loop until convergent," "address every finding," or "iterate to
-convergence." The skill helps you create the ledger, type each finding, and
-plan each iteration before you run it. When the loop converges or reaches
-its budget, it also helps you write an honest closing note.
-
-Read [`skills/roborev-refine-and-polish/SKILL.md`](./skills/roborev-refine-and-polish/SKILL.md)
-for the full discipline. Read the [worked example](./docs/example-ledger.md)
-for a filled-in loop.
+Once installed, the skill activates automatically whenever you run a
+multi-iteration roborev refine loop. You can also invoke it directly with
+`/refine-and-polish:roborev-refine-and-polish`.
 
 ## Known limitations
 
-- **roborev is required.** This is a discipline *on top of* roborev, not a
-  standalone tool. See [Requirements](#requirements).
-- **The discipline assumes subscription-backed reviewers.** It deliberately
-  does not route a downed reviewer through an API key. If your setup uses
-  only an API key, the "reviewer unavailable" handling will not match your
-  situation.
+- **Requires roborev.** This skill enhances it. It does not replace roborev
+  or run on its own.
+- **Assumes subscription-backed reviewers.** It deliberately won't route a
+  downed reviewer through an API key. See the skill for why.
 
 ## Author
 
-[Jesse Robbins](https://jesserobbins.com) (@jesserobbins) built this skill on top of [roborev](https://roborev.io).
+[Jesse Robbins](https://jesserobbins.com) (@jesserobbins) built this on top
+of [roborev](https://roborev.io).
 
 ## License
 

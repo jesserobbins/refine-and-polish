@@ -5,14 +5,14 @@
     "email": "jesse.robbins@openaid.org"
   },
   "metadata": {
-    "description": "Discipline for tracking a multi-iteration roborev refine loop in a private ledger.",
-    "version": "0.1.0"
+    "description": "A skill that enhances roborev with a private ledger for tracking a multi-iteration refine loop.",
+    "version": "0.2.0"
   },
   "plugins": [
     {
       "name": "refine-and-polish",
       "source": "./",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "description": "Track a multi-iteration roborev refine loop in a private ledger. Detect regressions, repeats, and loops, defend deliberate pushback, handle a reviewer going offline, and decide when to stop."
     }
   ]
