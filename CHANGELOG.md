@@ -4,6 +4,26 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0] - 2026-08-13
+
+This is the first release out of alpha. The two-step marketplace install has
+been run end to end.
+
+### Added
+
+- A scope note in the skill that states plainly what the ledger reads: only
+  roborev's own review findings, tied to a specific job ID, never an
+  outsider-authored feed, queue, or text channel.
+- An Author section in the README.
+
+### Changed
+
+- Rewrote all prose in the README, this changelog, the worked example, and
+  the skill itself in Simplified Technical English: short sentences, active
+  voice, no banned modals, no filler.
+- Removed the alpha status note and the "install not yet verified" known
+  limitation, now that the install has been verified end to end.
+
 ## [0.0.2-alpha] - 2026-08-05
 
 ### Changed
@@ -12,6 +32,7 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Use `Iteration` consistently and record per-iteration plans and results in a
   table.
 
+[0.1.0]: https://github.com/jesserobbins/refine-and-polish/releases/tag/v0.1.0
 [0.0.2-alpha]: https://github.com/jesserobbins/refine-and-polish/releases/tag/v0.0.2-alpha
 
 ## [0.0.1-alpha] - 2026-06-25

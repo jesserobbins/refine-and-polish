@@ -1,11 +1,8 @@
 # Robo Refine and Polish
 
-> **Status: `0.0.2-alpha`.** This is an early release. The discipline is
-> proven and tested in practice, but the packaging is new. The two-step
-> install below follows the documented plugin-marketplace flow and matches
-> other working plugins. No fresh user has run the install from start to
-> finish yet. Expect rough edges in the installation steps, not in the
-> method. Feedback is welcome.
+> **Status: `0.1.0`.** The discipline is proven and tested in practice, and
+> the two-step marketplace install has been run end to end. Feedback is
+> welcome.
 
 A Claude Code skill that keeps a long [`roborev`](https://roborev.io) refine loop
 honest.
@@ -107,12 +104,8 @@ Read [`skills/roborev-refine-and-polish/SKILL.md`](./skills/roborev-refine-and-p
 for the full discipline. Read the [worked example](./docs/example-ledger.md)
 for a filled-in loop.
 
-## Known limitations (alpha)
+## Known limitations
 
-- **Install not yet verified end-to-end.** The two-step marketplace install
-  matches the documented flow and working plugins, but no fresh user has run
-  it start to finish. If `/plugin install` fails, this step is the most
-  likely cause.
 - **roborev is required.** This is a discipline *on top of* roborev, not a
   standalone tool. See [Requirements](#requirements).
 - **The discipline assumes subscription-backed reviewers.** It deliberately
