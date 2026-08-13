@@ -25,24 +25,24 @@ You re-argue a decision that the next agent run cannot see.
 
 ## What it gives you
 
-- **A typed ledger table** — one row per finding, across all iterations and
+- **A typed ledger table**: one row per finding, across all iterations and
   all reviewer agents. A `Type` column forces the distinction between `NEW`,
   `REGRESSION`, `REPEAT`, and `LOOP`.
-- **Multi-reviewer discipline** — `claude-code`, `codex`, and `pi` run as
+- **Multi-reviewer discipline.** `claude-code`, `codex`, and `pi` run as
   separate jobs. If one reviewer flags an issue and another does not, that
   difference stays visible as signal.
-- **A deliberate-pushback list** — the mechanism that lets a multi-agent loop
+- **A deliberate-pushback list**, the mechanism that lets a multi-agent loop
   converge when reviewers cannot see prior turns. A defended decision stops
   the loop from repeating without end.
-- **An explicit convergence criterion and iteration budget** — including the
+- **An explicit convergence criterion and iteration budget**, including the
   honest "budget stop" for an unbounded tail of Low-severity findings.
-- **Coverage caveats** — when a subscription reviewer goes down, the ledger
+- **Coverage caveats**: when a subscription reviewer goes down, the ledger
   records the limitation. It never drops silently to one agent.
 
 ## Requirements
 
-This skill builds on **[roborev](https://roborev.io)** — continuous code review
-for AI coding agents — and its `/roborev-refine` loop. roborev is the loop
+This skill builds on **[roborev](https://roborev.io)** (continuous code review
+for AI coding agents) and its `/roborev-refine` loop. roborev is the loop
 runner that this discipline sits on top of. The ledger uses roborev's job
 IDs, agent names, and Pass/Fail verdicts as keys. Install roborev first (see
 the [roborev installation guide](https://roborev.io/installation/) and
@@ -51,8 +51,8 @@ methodology still applies, but the commands in this skill do not run.
 
 ## Installation
 
-This repo is its own plugin marketplace, so install it in two steps — add the
-marketplace, then install the plugin:
+This repo is its own plugin marketplace. Install it in two steps: add the
+marketplace, then install the plugin.
 
 ```sh
 /plugin marketplace add jesserobbins/refine-and-polish
@@ -70,20 +70,20 @@ After installation, a two-reviewer loop looks like this. The skill drives
 these steps. You do not have to memorize them.
 
 ```sh
-# 1. See which subscription reviewers are live — record them in the ledger header.
+# 1. See which subscription reviewers are live, then record them in the ledger header.
 roborev check-agents
 
-# 2. Create the ledger (private notes — never committed to a public repo):
+# 2. Create the ledger (private notes, never committed to a public repo):
 #    header, convergence criterion, and empty tables. The skill writes these for you.
 
-# 3. Iteration 1 — run each reviewer as its own job, same scope:
+# 3. Iteration 1: run each reviewer as its own job, same scope:
 roborev review --branch --agent claude-code --wait
 roborev review --branch --agent codex --wait
 
 # 4. Add one row per finding to the ledger and TYPE each one
 #    (NEW / REGRESSION / REPEAT / LOOP). Fix what's real; defend what isn't.
 
-# 5. Before each next iteration, add an "Iteration N" report row — predict the run.
+# 5. Before each next iteration, add an "Iteration N" report row that predicts the run.
 #    Re-review, update the tables, check the convergence criterion. Repeat.
 ```
 
@@ -114,7 +114,7 @@ for a filled-in loop.
   it start to finish. If `/plugin install` fails, this step is the most
   likely cause.
 - **roborev is required.** This is a discipline *on top of* roborev, not a
-  standalone tool — see [Requirements](#requirements).
+  standalone tool. See [Requirements](#requirements).
 - **The discipline assumes subscription-backed reviewers.** It deliberately
   does not route a downed reviewer through an API key. If your setup uses
   only an API key, the "reviewer unavailable" handling will not match your
