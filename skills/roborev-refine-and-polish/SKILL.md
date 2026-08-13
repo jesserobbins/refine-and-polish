@@ -5,34 +5,34 @@ description: A discipline for tracking a multi-iteration roborev refine loop in 
 
 # Robo Refine and Polish
 
-A long roborev refine loop without bookkeeping is how you end up "fixing" the
-same finding three times, missing a regression you introduced two iterations
-ago, and silently re-litigating a deliberate design decision because the next
-agent run can't see your reasoning. This skill is the bookkeeping.
+A long roborev refine loop without bookkeeping causes problems. You "fix"
+the same finding three times. You miss a regression that you introduced two
+iterations ago. You re-litigate a deliberate design decision, because the
+next agent run cannot see your reasoning. This skill is the bookkeeping.
 
 `/roborev-refine` runs the review-fix-rereview cycle. This skill keeps the
 ledger that turns the cycle into a converging process.
 
-Use it when:
+Use this skill when:
 
-- The loop is expected to take more than ~2 iterations.
-- Two or more reviewer agents are involved (e.g. claude-code + codex).
+- The loop is expected to take more than two iterations.
+- Two or more reviewer agents are involved, for example claude-code and codex.
 - The user has asked for convergence ("loop until clean", "address every
   finding", "max 10 iterations"), or for the loop to be tracked privately.
-- A finding has come back after a fix and you need to decide whether to
-  re-fix, defend, or escalate.
+- A finding has come back after a fix, and you must decide whether to
+  re-fix, defend, or escalate it.
 
 If the loop is one quick iteration, this skill is overhead. Skip it.
 
 ## Requirements
 
-This skill assumes [roborev](https://roborev.io) — continuous code review for AI
-coding agents — and its `/roborev-refine` command are installed and configured.
-roborev is the loop runner this discipline sits on top of, and the ledger is
-keyed to roborev's job ids, agent names, and Pass/Fail verdicts. See the
-[installation guide](https://roborev.io/installation/) to set it up; without
-roborev, the ledger discipline still reads as a methodology, but the commands in
-this skill won't run.
+This skill assumes that [roborev](https://roborev.io) — continuous code review
+for AI coding agents — and its `/roborev-refine` command are installed and
+configured. roborev is the loop runner that this discipline sits on top of.
+The ledger uses roborev's job ids, agent names, and Pass/Fail verdicts as
+keys. See the [installation guide](https://roborev.io/installation/) to set
+it up. Without roborev, the ledger discipline still reads as a methodology,
+but the commands in this skill do not run.
 
 ## Scope: reviewer output only, not arbitrary third-party text
 
@@ -60,19 +60,20 @@ roborev review --branch --agent claude-code --wait
 roborev review --branch --agent codex --wait      # or --since <commit>
 ```
 
-Both jobs review the same scope; their findings land in the ledger under
-distinct `Agent` values. "claude-code flagged X but codex didn't" is signal, so
-keep them as separate jobs, not one merged run.
+Both jobs review the same scope. Their findings land in the ledger under
+distinct `Agent` values. "claude-code flagged X but codex did not" is signal,
+so keep them as separate jobs, not one merged run.
 
-**Never restore a downed reviewer through the API.** When a reviewer's
-subscription auth breaks mid-loop — codex's CLI rejecting under a ChatGPT-account
-plan is the recurring one — that reviewer is *unavailable*, and unavailable is a
-recorded coverage caveat (see below), not a problem to route around. Do **not**
-set `OPENAI_API_KEY` / `ANTHROPIC_API_KEY`, do **not** pass `--provider openai`
-with a key, do **not** "temporarily" swap the subscription reviewer for an
-API-keyed one to reach two-agent convergence. Subscription-only is the
-constraint; a single-agent pass honestly captioned beats a two-agent pass faked
-with an API key. If the user wants API reviewing they will ask — never propose it.
+**Never restore a downed reviewer through the API.** A reviewer's subscription
+auth can break mid-loop — codex's CLI rejecting under a ChatGPT-account plan
+is the recurring case. When this happens, that reviewer is *unavailable*.
+Unavailable is a recorded coverage caveat (see below), not a problem to route
+around. Do **not** set `OPENAI_API_KEY` / `ANTHROPIC_API_KEY`. Do **not**
+pass `--provider openai` with a key. Do **not** "temporarily" swap the
+subscription reviewer for an API-keyed one to reach two-agent convergence.
+Subscription-only is the constraint. A single-agent pass honestly captioned
+beats a two-agent pass faked with an API key. If the user wants API
+reviewing, they will ask for it. Never propose it yourself.
 
 At loop start, run `roborev check-agents` and record which reviewers are live in
 the ledger header. That one line up front is what turns "codex was down" from a
@@ -82,51 +83,53 @@ mid-loop surprise into a known constraint.
 
 Keep one Markdown file per refine loop in the project's private notes
 location, `reviews/<pr-or-branch-slug>.md`. Where `reviews/` lives depends
-on the project layout — a sibling `<project>-private/` repo, a `private/`
-subdir, or (for a repo that is itself private) a top-level `reviews/`. Follow
-whatever the project's instructions file (CLAUDE.md / AGENTS.md) says. This
-file is private — never link to it from a public PR.
+on the project layout: a sibling `<project>-private/` repo, or a `private/`
+subdir. For a repo that is itself private, use a top-level `reviews/`
+directory instead. Follow the project's instructions file (CLAUDE.md or
+AGENTS.md). This file is private. Never link to it from a public PR.
 
 The file holds these, in this order:
 
 1. **Loop header** — branch, PR, the user's instruction in their own
    words, the convergence criterion, and **which reviewers are live**
-   (`roborev check-agents` output: e.g. "claude-code + codex; pi available").
+   (`roborev check-agents` output: for example "claude-code + codex; pi
+   available").
 2. **Ledger table** — one row per finding, across all iterations and
    all agents.
 3. **Open design questions** — anything the loop surfaced that the user
-   has decided needs to be answered before the loop can converge.
-4. **Per-iteration report** — a table recording what you expected to fix,
-   what actually happened, what you decided, and what you're watching next.
+   has decided needs an answer before the loop can converge.
+4. **Per-iteration report** — a table that records what you expected to fix,
+   what actually happened, what you decided, and what you are watching next.
 5. **Deliberate-pushback list** — findings you have decided NOT to fix,
    with the reasoning, so a future re-raise is not a loop.
 
 ## The ledger table
 
-The single most load-bearing artifact. Columns:
+This table is the most load-bearing artifact in the ledger. Columns:
 
 | Iteration | Agent | Sev | Location | Type | Status / Commit |
 
 - **Iteration** — `1`, `2`, … or `pre` for findings that were already on
-  `main` before the branch and got picked up incidentally. Use a letter
-  suffix (`1b`) for an extra or retry review that lands inside the same
-  iteration — a reviewer coming back online, a re-run under a different
-  model — without bumping to the next iteration's number.
+  `main` before the branch, and got picked up incidentally. Use a letter
+  suffix (`1b`) for an extra or retry review inside the same iteration.
+  Examples: a reviewer coming back online, or a re-run under a different
+  model. Do not bump to the next iteration's number for these.
 - **Agent** — roborev's agent name: `claude-code`, `codex`, `pi`.
   This matters because agents disagree, and "claude-code flagged X but
-  codex didn't" is itself signal. Record the **roborev job id** for each
-  agent's run in the per-iteration results (e.g. "claude-code, job 699") — it
-  is the index back into `roborev log <job>` and `roborev show <job>`;
-  the ledger row stays a one-line distillation, the job is the full text.
-- **Sev** — `H`, `M`, `L`, or `—` for a non-finding row (an agent that
-  errored / was unavailable this iteration — record it so the coverage gap is
-  visible, not silent). Bold the High rows.
-- **Location** — file + symbol or short description. Specific enough
-  that the next iteration's reviewer output can be matched against it
+  codex did not" is itself signal. Record the **roborev job id** for each
+  agent's run in the per-iteration results (for example "claude-code, job
+  699"). This id is the index back into `roborev log <job>` and `roborev
+  show <job>`. The ledger row stays a one-line distillation. The job holds
+  the full text.
+- **Sev** — `H`, `M`, `L`, or `—` for a non-finding row. If an agent
+  errored or was unavailable this iteration, use `—` and record it. Keep
+  the coverage gap visible, not silent. Bold the High rows.
+- **Location** — file plus symbol, or a short description. Make it specific
+  enough that the next iteration's reviewer output can be matched against it
   without rereading the diff.
 - **Type** — `NEW`, `PRE` (pre-existing on main), `REGRESSION of
   <iteration>.<agent>.<sev>` with the closing commit, or `REPEAT of <…>`.
-  The type column is what the discipline depends on; do not skip it.
+  The discipline in this skill depends on the type column. Do not skip it.
 - **Status / Commit** — `Fixed <sha>`, `Fixed <sha> (+ regression
   test)`, `Deferred (see pushback list)`, or `Escalated to user`.
 
@@ -142,37 +145,38 @@ pushback list:
 | 2 | codex | M | `auth.py` refresh now drops on 401 | REGRESSION of 1.claude-code.H | Fixed `e4f5a6b` (+ regression test) |
 | 3 | codex | L | `cache.py` unbounded key growth | REPEAT of 1.codex.M | No change — see pushback list |
 
-Each project's `reviews/` directory accumulates these over time; reading
-a recent one in the project you're working in is the fastest way to see a
-full loop's worth of rows in context.
+Each project's `reviews/` directory accumulates these files over time.
+Reading a recent one, in the project that you are working in, is the
+fastest way to see a full loop's worth of rows in context.
 
 ## Type discipline: regression vs repeat vs loop
 
 These three words are not interchangeable. Get them right or the
 ledger lies.
 
-- **NEW** — first time this finding has appeared anywhere in the
+- **NEW** — this is the first appearance of this finding anywhere in the
   loop.
 - **REGRESSION of `<iteration>.<agent>.<sev>`** — *my fix in a prior iteration
   caused this*. Same code path, broken in a new way. The fix needs a
   regression test at the boundary that broke. If you keep regressing
-  the same area, slow down (smaller commits, paired tests).
+  the same area, slow down. Use smaller commits and paired tests.
 - **REPEAT of `<iteration>.<agent>.<sev>`** — same symptom at the same
   location as a finding you already fixed. This is a *defend* signal,
-  not a re-fix signal. Either the prior fix didn't actually land, the
+  not a re-fix signal. Either the prior fix did not actually land, the
   reviewer is seeing a snapshot that predates the fix, or the
-  reviewer is wrong. Investigate before changing code.
-- **LOOP** — finding closed in Iteration N reappears identically in Iteration
-  N+1. This is how you discover that your fix and the reviewer's
-  expectation disagree on what "fixed" means. Stop fixing and
-  reconcile, usually by writing a more pointed test or by moving the
-  finding to the deliberate-pushback list with explicit reasoning.
+  reviewer is wrong. Investigate before you change code.
+- **LOOP** — a finding closed in Iteration N reappears identically in
+  Iteration N+1. This is how you discover that your fix and the
+  reviewer's expectation disagree on what "fixed" means. Stop fixing and
+  reconcile the difference, usually by writing a more pointed test or by
+  moving the finding to the deliberate-pushback list with explicit
+  reasoning.
 
-Why the distinction matters: a regression rate above ~30% iteration-to-
-iteration says your commits are too coarse and need paired tests at the
-regression boundary. A repeat says you should be defending, not
-patching. A loop says the *meaning* of the finding is unsettled and
-more code won't help.
+Why the distinction matters: a regression rate above about 30%
+iteration-to-iteration means your commits are too coarse, and need paired
+tests at the regression boundary. A repeat means you must defend the
+finding, not patch it. A loop means the *meaning* of the finding is
+unsettled, and more code will not help.
 
 ## When a reviewer is unavailable
 
@@ -183,48 +187,48 @@ break, so handle it explicitly instead of quietly dropping to one agent:
 
 1. **Record it as a row** — `—` severity, "agent unavailable this iteration,"
    with the actual error (auth rejection, harness incompat). The coverage
-   gap belongs in the ledger, not just in your head.
+   gap belongs in the ledger, not only in your head.
 2. **First check for a subscription-only restore.** A `400 ... <model> not
-   supported with a ChatGPT account` is usually a *model-slug mismatch*,
-   not a dead subscription: roborev asked codex for a model the plan
-   doesn't serve while the CLI's own default (e.g. `gpt-5.5`) works fine.
-   Repoint it at a plan-served model — `roborev review --agent codex
-   --model <plan-served-slug>` — which keeps the reviewer on its
-   subscription. This is the legitimate way to *keep* a second reviewer;
-   the API key is still never it.
-3. **Then one retry, then waive** — if it's not a slug fix, retry once
+   supported with a ChatGPT account` error is usually a *model-slug
+   mismatch*, not a dead subscription. roborev asked codex for a model
+   that the plan does not serve. The CLI's own default (for example
+   `gpt-5.5`) works fine. Repoint it at a plan-served model — `roborev
+   review --agent codex --model <plan-served-slug>` — which keeps the
+   reviewer on its subscription. This is the legitimate way to *keep* a
+   second reviewer. The API key is still never the answer.
+3. **Then one retry, then waive** — if it is not a slug fix, retry once
    (a re-run) as a `1b` sub-iteration. If it still fails, waive that
    reviewer for the loop. Do **not** spend the budget babysitting a
    broken harness, and do **not** reach for an API key to revive it
    (see "Reviewers are subscription-backed agents").
 4. **Caption the convergence** — when you declare convergent, a single
    active reviewer is honest *only* with a **reviewer-coverage caveat** in
-   the closing: which reviewer was down, why, and that convergence rests
-   on the agent(s) that did run. "Convergent (claude-code only; codex
-   structurally unavailable all iters)" is honest. Silently treating a
-   one-agent pass as the scoped two-agent cross-check is the failure this
-   caveat exists to prevent.
+   the closing. State which reviewer was down, why, and that convergence
+   rests on the agent or agents that did run. "Convergent (claude-code
+   only; codex structurally unavailable all iters)" is honest. Silently
+   treating a one-agent pass as the scoped two-agent cross-check is the
+   failure that this caveat exists to prevent.
 
 A waived reviewer is a known, recorded limitation — never a silent one.
 
 ## roborev's verdict is not your convergence criterion
 
 `roborev review` returns **Fail on any finding at all**, including a lone
-Low — it is a mechanical gate, not a judgment about whether the loop is
-done. Your convergence criterion (below) is what decides when to stop;
-roborev's Pass/Fail only tells you findings exist. A re-review you expect
-to come back clean is still a real review: a genuine new finding there —
-a "confirmatory" pass can surface a real correctness bug — is real work,
-not noise to wave through so you can declare convergence. Read every
-finding on its merits regardless of which pass produced it.
+Low. It is a mechanical gate, not a judgment about whether the loop is
+done. Your convergence criterion (below) decides when to stop. roborev's
+Pass/Fail only tells you that findings exist. A re-review that you expect
+to come back clean is still a real review. A "confirmatory" pass can
+surface a real correctness bug, and a genuine new finding there is real
+work, not noise to wave through so that you can declare convergence. Read
+every finding on its merits, regardless of which pass produced it.
 
 ## The deliberate-pushback list
 
-Some findings you should not fix. Document each one in a list at the
+You must not fix some findings. Document each one in a list at the
 bottom of the ledger file, with:
 
 - The finding (severity + location + reviewer's wording).
-- **Why you're not fixing it** — at least two reasons, ideally one
+- **Why you are not fixing it** — at least two reasons, ideally one
   about the code (state of this branch / contract / call sites) and
   one about future direction (what the next planned change does to
   this surface).
@@ -233,10 +237,11 @@ bottom of the ledger file, with:
   the deliberate-pushback list.'"*
 
 This is the only mechanism that lets a multi-agent loop converge
-when reviewers can't see prior turns. Without it, every defensible
+when reviewers cannot see prior turns. Without it, every defensible
 design call becomes an infinite loop.
 
-A finding belongs on the pushback list when fixing it would:
+A finding belongs on the pushback list when fixing it does one of the
+following:
 
 - Contradict a deliberate design decision recorded in a spec or
   proposal.
@@ -247,15 +252,15 @@ A finding belongs on the pushback list when fixing it would:
   scenario on this branch.
 
 A finding does **not** belong on the pushback list because the fix
-"feels like effort." Cosmetic and Low findings are addressed too,
-when the fix is low-effort — roughly under 10 minutes, isolated to
-one function or comment, no new test surface beyond existing
-patterns. Default is fix; pushback is the exception.
+"feels like effort." Fix cosmetic and Low findings too when the fix is
+low-effort. Low-effort means roughly under 10 minutes, isolated to one
+function or comment, with no new test surface beyond existing patterns.
+Fixing is the default. Pushback is the exception.
 
 ## Convergence criterion
 
-State it explicitly at the top of the ledger and don't move it
-mid-loop. The default that's worked in practice is:
+State it explicitly at the top of the ledger. Do not move it mid-loop.
+In practice, this default works well:
 
 > Iteration N produces zero High/Medium and zero Low findings from any
 > agent, **or** the only remaining findings are on the deliberate-
@@ -263,53 +268,54 @@ mid-loop. The default that's worked in practice is:
 
 Two consequences:
 
-- A pushback re-raise is not a failure. It's the convergence signal.
+- A pushback re-raise is not a failure. It is the convergence signal.
 - A single new Low from any agent breaks convergence. Decide between
   fixing it (default) and pushback (with reasoning).
 
 **Variant — Lows pushback-by-default.** On a branch where a motivated
-reviewer will produce an endless drip of Lows, gate convergence on
-**High/Medium only** and make Lows pushback-by-default: documented, fixed
-only when trivially low-effort (the <10-min / one-function / no-new-test
-bar), otherwise deferred. State this variant in the header if you use it.
-It changes the stop condition to "zero H/M outside the pushback list" and
-keeps the loop from chasing an unbounded Low tail (see below).
+reviewer produces an endless drip of Lows, gate convergence on
+**High/Medium only**. Make Lows pushback-by-default: document them, fix
+them only when trivially low-effort (the under-10-minute, one-function,
+no-new-test bar), and otherwise defer them. If you use this variant,
+state it in the header. This variant changes the stop condition to
+"zero H/M outside the pushback list." It keeps the loop from chasing an
+unbounded Low tail (see below).
 
 ## Budget and extension
 
 Set a budget up front. Five iterations is a reasonable default for
-non-trivial branches; ten is the upper end before something is
-structurally wrong with the branch and you should escalate.
+non-trivial branches. Ten is the upper end. Past ten, something is
+structurally wrong with the branch, and you must escalate.
 
-When you hit the budget without convergence, **don't silently
+When you hit the budget without convergence, **do not silently
 continue**. Reassess:
 
-- If the only remaining finding is the expected pushback re-raise →
-  declare convergent, stop.
-- If material findings remain (any High/Medium, or any Low the user
-  judges worth fixing) → extend by another batch (commonly +5 iters,
-  to cap at 10), and record the extension decision in the ledger so
-  the trajectory is visible.
-- If the same finding has been fixed and re-flagged across three
-  consecutive iterations → that's a loop; escalate to the user with the
+- If the only remaining finding is the expected pushback re-raise,
+  declare convergent and stop.
+- If material findings remain (any High/Medium, or any Low that the user
+  judges worth fixing), extend by another batch of iterations (commonly
+  five more, capped at ten). Record the extension decision in the ledger
+  so the trajectory is visible.
+- If the same finding is fixed and re-flagged across three consecutive
+  iterations, this is a loop. Escalate to the user with the
   per-iteration trajectory. More iterations will not help.
-- If the regression rate is trending up across extended iters → slow
-  down. Smaller commits. Paired regression-boundary tests. A worse
+- If the regression rate trends up across the extended iterations, slow
+  down. Use smaller commits and paired regression-boundary tests. A worse
   trajectory at Iteration 7 than at Iteration 3 means the loop is no longer
   converging.
 
 **The Low tail — why budget, not "is the Low surface empty," is the
-stop rule.** A motivated reviewer re-reviewing the previous batch's fixes
+stop rule.** A motivated reviewer, re-reviewing the previous batch's fixes,
 produces a roughly steady stream of *new* Lows every iteration (one observed
-run: 5 → 3 → 4 → 4). These are not REPEATs and not regressions — they are
-a genuinely unbounded supply, because each fix is itself new surface to
-critique. Tell-tale sign: the reviewer's own suggested one-liner would
-draw the next iteration's finding (a `(x or "").strip()` that still throws on a
-non-string `x`). When H/M is clean and only this Low tail remains, stop on
-the **budget**, and say so plainly in the closing — "convergent at the
+run: 5, 3, 4, 4). These are not REPEATs and not regressions. They are a
+genuinely unbounded supply, because each fix is itself new surface to
+critique. Tell-tale sign: the reviewer's own suggested one-liner draws
+the next iteration's finding (a `(x or "").strip()` that still throws on a
+non-string `x`). When H/M is clean and only this Low tail remains, stop
+on the **budget**. Say so plainly in the closing — "convergent at the
 iteration budget; the remaining Lows are a reviewer tail, not an
-exhausted surface," not "no Lows remain." Honest budget stop beats a false
-"clean" claim.
+exhausted surface," not "no Lows remain." An honest budget stop beats a
+false "clean" claim.
 
 ## Per-iteration reporting
 
@@ -317,7 +323,7 @@ Record one row per iteration in the private ledger, using this table:
 
 | Iteration | Plan | Reviewer results | Findings and decisions | Watch next |
 |-----------|------|------------------|------------------------|------------|
-| 1 | What you expect to fix and what should not recur | Job IDs, reviewers, and concise results | Findings fixed, deferred, refuted, or escalated | Regression hazards and expected re-raises |
+| 1 | What you expect to fix and what must not recur | Job IDs, reviewers, and concise results | Findings fixed, deferred, refuted, or escalated | Regression hazards and expected re-raises |
 
 Write the plan before re-running the reviewers. Add the results as they land,
 including each agent's job id. Per-commit reviews and branch-level reviews go
@@ -328,25 +334,26 @@ table as part of writing the report row, not afterward.
 When you act on a finding:
 
 - **Fix the surface, not the reviewer's literal line.** A reviewer's
-  suggested one-liner is a hint, not a patch to paste. If its fix would
-  still fail a neighboring case, fix the actual surface (and add the test
-  that the one-liner would have missed). Pasting the literal suggestion is
-  how you manufacture the next iteration's finding. See
+  suggested one-liner is a hint, not a patch to paste. If its fix still
+  fails a neighboring case, fix the actual surface, and add the test that
+  the one-liner missed. Pasting the literal suggestion is how you
+  manufacture the next iteration's finding. See
   superpowers:receiving-code-review.
 - **Verify-flagged findings.** When a reviewer says "verify, not a
-  confirmed bug," *verify it* — read the call sites, confirm or refute —
-  and record the result (a no-change confirmation is a valid outcome, e.g.
-  "verified no consumer keys on this field → pushback"). Don't change code
-  to silence a flag you haven't confirmed.
+  confirmed bug," *verify it*: read the call sites, and verify or refute
+  the claim. Record the result. A no-change verification is a valid
+  outcome, for example "verified no consumer keys on this field →
+  pushback." Do not change code to silence a flag that you have not
+  verified.
 
 ## Post-convergence follow-ups
 
-Deferred Lows you still want done after the loop closes land as a **single
-follow-up commit, explicitly not a refine iteration** — no re-review, no
-new ledger iteration. Note it in the closing ("deferred Lows landed in `<sha>`
-post-convergence; not a 4th iteration") so the trajectory stays honest:
-the loop converged at Iteration N, and this is cleanup on top, not evidence the
-loop should have run longer.
+For deferred Lows that you still want done after the loop closes, land them
+in a **single follow-up commit**. This is explicitly not a refine
+iteration: no re-review, no new ledger iteration. Note it in the closing ("deferred Lows
+landed in `<sha>` post-convergence; not a 4th iteration"). This keeps the
+trajectory honest: the loop converged at Iteration N, and this cleanup on
+top is not evidence that the loop needed to run longer.
 
 ## Workflow
 
@@ -359,36 +366,36 @@ loop should have run longer.
    When findings land, add a row per finding to the ledger. Type each
    one (NEW or PRE for Iteration 1).
 3. **Before each subsequent iteration** — write the next report row's plan.
-   This forces you to predict the run instead of just consuming it.
+   This forces you to predict the run, instead of only consuming it.
 4. **After each iteration** — fill in the results, type each finding,
-   update the ledger and report tables, and (if convergence is in sight)
-   check the criterion before starting the next iteration.
+   update the ledger and report tables, and, if convergence is in sight,
+   check the criterion before you start the next iteration.
 5. **At convergence or budget exhaustion** — write a closing section.
    For convergence: list the pushback findings that justified stopping,
    the H/M trajectory, and a reviewer-coverage caveat if any reviewer
-   was down. For exhaustion: the iteration-by-iteration table + what's still
-   surfacing, ready to surface to the user.
+   was down. For exhaustion: the iteration-by-iteration table, plus what
+   is still surfacing, ready to show the user.
 6. **Commit the ledger file at every iteration boundary.** This is private
-   notes, not public artifacts; commits cost nothing and the
+   notes, not public artifacts. Commits cost nothing, and the
    reconstructable trajectory is the whole point.
 
 ## Things to avoid
 
-- Don't paste reviewer output verbatim into the ledger. Distill to
+- Do not paste reviewer output verbatim into the ledger. Distill it to
   one row per finding. The reviewer's full output already exists in
-  the daemon's job log; the ledger is the index.
-- Don't link to the ledger file from a public PR or commit message.
+  the daemon's job log. The ledger is the index.
+- Do not link to the ledger file from a public PR or commit message.
   That leaks the path and the private repo's existence. If a finding
   needs public discussion, write it up fresh in the PR.
-- Don't retroactively rewrite past iteration rows. If a prior call was
-  wrong, append a correction — the trajectory is the diagnostic.
-- Don't move a finding from "deliberate pushback" to "fixed" without
+- Do not retroactively rewrite past iteration rows. If a prior call was
+  wrong, append a correction. The trajectory is the diagnostic.
+- Do not move a finding from "deliberate pushback" to "fixed" without
   noting why the prior reasoning no longer applies. Changing your
-  mind is fine; silently reversing is the thing that turns a defended
-  decision into a loop.
-- Don't reach for an API key to revive a downed subscription reviewer,
-  and don't quietly drop to one agent without a coverage caveat. Both
-  fake a convergence the loop didn't actually earn.
+  mind is fine. Silently reversing it is the thing that turns a
+  defended decision into a loop.
+- Do not reach for an API key to revive a downed subscription reviewer.
+  Do not quietly drop to one agent without a coverage caveat. Both
+  fake a convergence that the loop did not actually earn.
 
 ## Quick reference
 
@@ -412,9 +419,9 @@ loop should have run longer.
   needed).
 - `roborev check-agents` — which subscription reviewers are live before
   you scope the loop.
-- superpowers:receiving-code-review — how to weigh a finding before
-  acting on it (verify, don't perform agreement, don't blind-apply). If
-  you have the superpowers skill set installed; otherwise the principle
-  stands on its own.
+- superpowers:receiving-code-review — how to weigh a finding before you
+  act on it: verify it, do not perform agreement, do not blind-apply it.
+  Use this if you have the superpowers skill set installed. Otherwise the
+  principle stands on its own.
 - A recent ledger in this project's `reviews/` directory — the shape
   filled in, with a full loop's worth of typed rows in context.

@@ -1,49 +1,53 @@
 # Robo Refine and Polish
 
-> **Status: `0.0.2-alpha`.** Early release. The discipline is real and
-> battle-tested in practice, but the packaging is new: the two-step install
-> below follows the documented plugin-marketplace flow and matches working
-> plugins, but hasn't been run end-to-end by a fresh user yet. Expect rough
-> edges in the plumbing, not the method. Feedback welcome.
+> **Status: `0.0.2-alpha`.** This is an early release. The discipline is
+> proven and tested in practice, but the packaging is new. The two-step
+> install below follows the documented plugin-marketplace flow and matches
+> other working plugins. No fresh user has run the install from start to
+> finish yet. Expect rough edges in the installation steps, not in the
+> method. Feedback is welcome.
 
 A Claude Code skill that keeps a long [`roborev`](https://roborev.io) refine loop
 honest.
 
-`/roborev-refine` runs the review → fix → re-review cycle. **Robo Refine and
-Polish** is the bookkeeping that turns that cycle into a *converging* process: a private
-ledger that tracks every finding across iterations and reviewers, so you can
-tell a regression from a repeat from a loop, defend a deliberate design call
-without re-litigating it every iteration, handle a reviewer going offline
-without faking coverage, and decide — honestly — when to stop.
+`/roborev-refine` runs the review, fix, and re-review cycle. **Robo Refine
+and Polish** adds the bookkeeping that turns this cycle into a process that
+converges. A private ledger tracks every finding across iterations and
+reviewer agents. The ledger lets you tell a regression from a repeat from a
+loop. It lets you defend a deliberate design choice without arguing it
+again each iteration. It lets you handle a reviewer that goes offline
+without a false claim of full coverage. It helps you decide, with honesty,
+when to stop.
 
-Without the ledger, a long loop is how you end up "fixing" the same finding
-three times, missing a regression you introduced two iterations ago, and
-silently re-arguing a decision the next agent run can't see.
+Without the ledger, a long loop causes problems. You fix the same finding
+three times. You miss a regression that you introduced two iterations ago.
+You re-argue a decision that the next agent run cannot see.
 
 ## What it gives you
 
-- **A typed ledger table** — one row per finding, across all iterations and all
-  reviewer agents, with a `Type` column that forces the distinction between
-  `NEW`, `REGRESSION`, `REPEAT`, and `LOOP`.
-- **Multi-reviewer discipline** — run `claude-code`, `codex`, and `pi` as
-  separate jobs so "one reviewer flagged it, another didn't" stays as signal.
+- **A typed ledger table** — one row per finding, across all iterations and
+  all reviewer agents. A `Type` column forces the distinction between `NEW`,
+  `REGRESSION`, `REPEAT`, and `LOOP`.
+- **Multi-reviewer discipline** — `claude-code`, `codex`, and `pi` run as
+  separate jobs. If one reviewer flags an issue and another does not, that
+  difference stays visible as signal.
 - **A deliberate-pushback list** — the mechanism that lets a multi-agent loop
-  converge when reviewers can't see prior turns; a defended decision stops being
-  an infinite loop.
+  converge when reviewers cannot see prior turns. A defended decision stops
+  the loop from repeating without end.
 - **An explicit convergence criterion and iteration budget** — including the
   honest "budget stop" for an unbounded tail of Low-severity findings.
-- **Coverage caveats** — when a subscription reviewer goes down, that's a
-  recorded limitation, never a silent drop to one agent.
+- **Coverage caveats** — when a subscription reviewer goes down, the ledger
+  records the limitation. It never drops silently to one agent.
 
 ## Requirements
 
 This skill builds on **[roborev](https://roborev.io)** — continuous code review
-for AI coding agents — and its `/roborev-refine` loop. roborev is the loop runner
-this discipline sits on top of: the ledger is keyed to roborev's job ids, agent
-names, and Pass/Fail verdicts. Install it first (see the
-[roborev installation guide](https://roborev.io/installation/) and
-[quick start](https://roborev.io/quickstart/)); without it, the methodology still
-reads, but the commands in this skill won't run.
+for AI coding agents — and its `/roborev-refine` loop. roborev is the loop
+runner that this discipline sits on top of. The ledger uses roborev's job
+IDs, agent names, and Pass/Fail verdicts as keys. Install roborev first (see
+the [roborev installation guide](https://roborev.io/installation/) and
+[quick start](https://roborev.io/quickstart/)). Without roborev, the
+methodology still applies, but the commands in this skill do not run.
 
 ## Installation
 
@@ -55,14 +59,15 @@ marketplace, then install the plugin:
 /plugin install refine-and-polish@refine-and-polish
 ```
 
-The skill activates automatically when relevant — when you run a multi-iteration
-roborev refine loop — and you can also invoke it explicitly with
-`/refine-and-polish:roborev-refine-and-polish` (plugin skills are namespaced by plugin).
+The skill activates automatically when you run a multi-iteration roborev
+refine loop. You can also invoke it directly with
+`/refine-and-polish:roborev-refine-and-polish`. Plugin skills use this
+namespaced form.
 
 ## Quickstart: your first loop
 
-Once installed, a two-reviewer loop looks like this. The skill drives these
-steps; you don't have to memorize them.
+After installation, a two-reviewer loop looks like this. The skill drives
+these steps. You do not have to memorize them.
 
 ```sh
 # 1. See which subscription reviewers are live — record them in the ledger header.
@@ -82,35 +87,42 @@ roborev review --branch --agent codex --wait
 #    Re-review, update the tables, check the convergence criterion. Repeat.
 ```
 
-You stop when an iteration produces zero findings outside the deliberate-pushback
-list — or when you hit your iteration budget and caption the remaining Low tail
-honestly. See the [worked example](./docs/example-ledger.md) for a real
-three-iteration loop with a filled-in ledger, a pushback entry, and an honest
-convergence caption.
+You stop the loop when an iteration produces zero findings outside the
+deliberate-pushback list. You also stop when you reach your iteration
+budget. In that case, describe the remaining tail of Low-severity findings
+with honesty. See the [worked example](./docs/example-ledger.md) for a
+three-iteration loop with a filled-in ledger, a pushback entry, and an
+honest convergence caption.
 
 ## Usage
 
-Use it whenever a refine loop will run for more than a couple of iterations —
-especially with two or more reviewer agents, or when you've been asked to "loop
-until convergent", "address every finding", or "iterate to convergence". The
-skill walks you through creating the ledger, typing each finding, planning each
-iteration before you run it, and writing an honest closing when the loop
-converges or hits its budget.
+If a refine loop runs for more than two iterations, use this skill. Use it
+especially with two or more reviewer agents. Also use it when someone asks
+you to "loop until convergent," "address every finding," or "iterate to
+convergence." The skill helps you create the ledger, type each finding, and
+plan each iteration before you run it. When the loop converges or reaches
+its budget, it also helps you write an honest closing note.
 
-For the full discipline, read
-[`skills/roborev-refine-and-polish/SKILL.md`](./skills/roborev-refine-and-polish/SKILL.md); for a
-filled-in loop, read the [worked example](./docs/example-ledger.md).
+Read [`skills/roborev-refine-and-polish/SKILL.md`](./skills/roborev-refine-and-polish/SKILL.md)
+for the full discipline. Read the [worked example](./docs/example-ledger.md)
+for a filled-in loop.
 
 ## Known limitations (alpha)
 
 - **Install not yet verified end-to-end.** The two-step marketplace install
-  matches the documented flow and working plugins, but no fresh user has run it
-  start to finish. If `/plugin install` misbehaves, that's the most likely spot.
+  matches the documented flow and working plugins, but no fresh user has run
+  it start to finish. If `/plugin install` fails, this step is the most
+  likely cause.
 - **roborev is required.** This is a discipline *on top of* roborev, not a
   standalone tool — see [Requirements](#requirements).
 - **The discipline assumes subscription-backed reviewers.** It deliberately
-  refuses to route a downed reviewer through an API key; if your setup is
-  API-key-only, the "reviewer unavailable" handling won't match your situation.
+  does not route a downed reviewer through an API key. If your setup uses
+  only an API key, the "reviewer unavailable" handling will not match your
+  situation.
+
+## Author
+
+[Jesse Robbins](https://jesserobbins.com) (@jesserobbins) built this skill on top of [roborev](https://roborev.io).
 
 ## License
 

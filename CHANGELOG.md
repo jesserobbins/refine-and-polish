@@ -16,8 +16,8 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.0.1-alpha] — 2026-06-25
 
-First alpha. Packages the **Robo Refine and Polish** discipline as a standalone,
-self-installing Claude Code plugin.
+This is the first alpha release. It packages the **Robo Refine and Polish**
+discipline as a standalone, self-installing Claude Code plugin.
 
 ### Added
 
@@ -35,11 +35,11 @@ self-installing Claude Code plugin.
 
 ### Known limitations
 
-- The two-step marketplace install matches the documented plugin flow and working
-  plugins, but has not been run end-to-end by a fresh user.
-- Requires the [roborev](https://roborev.io) CLI; this is a discipline layered on
-  top of it, not a standalone tool.
-- Assumes subscription-backed reviewers; the "reviewer unavailable" handling
-  deliberately refuses API-key fallback.
+- The two-step marketplace install matches the documented plugin flow and known
+  working plugins. No new user tested it from start to finish.
+- Requires the [roborev](https://roborev.io) CLI. This discipline works as a layer
+  on top of roborev, not as a standalone tool.
+- Assumes subscription-backed reviewers. The "reviewer unavailable" handling
+  refuses API-key fallback on purpose.
 
 [0.0.1-alpha]: https://github.com/jesserobbins/refine-and-polish/releases/tag/v0.0.1-alpha
