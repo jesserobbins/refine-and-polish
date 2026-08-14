@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2026-08-14
+
+### Changed
+
+- Described the skill by what it does, not why: "a generic skill that runs
+  multiple roborev reviewers in a loop and tracks every finding in a
+  private ledger," replacing "keeps a long loop honest," in the README,
+  the skill's triggering description, and the plugin manifests.
+- Fixed a stale `0.1.0` status badge in the README.
+
 ## [0.2.0] - 2026-08-13
 
 ### Changed
@@ -44,6 +54,7 @@ been run end to end.
 - Use `Iteration` consistently and record per-iteration plans and results in a
   table.
 
+[0.2.1]: https://github.com/jesserobbins/refine-and-polish/releases/tag/v0.2.1
 [0.2.0]: https://github.com/jesserobbins/refine-and-polish/releases/tag/v0.2.0
 [0.1.0]: https://github.com/jesserobbins/refine-and-polish/releases/tag/v0.1.0
 [0.0.2-alpha]: https://github.com/jesserobbins/refine-and-polish/releases/tag/v0.0.2-alpha

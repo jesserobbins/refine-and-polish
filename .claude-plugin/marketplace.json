@@ -6,13 +6,13 @@
   },
   "metadata": {
     "description": "A generic skill that runs multiple roborev reviewers in a loop and tracks every finding in a private ledger.",
-    "version": "0.2.0"
+    "version": "0.2.1"
   },
   "plugins": [
     {
       "name": "refine-and-polish",
       "source": "./",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "description": "A generic skill that runs multiple roborev reviewers in a loop and tracks every finding in a private ledger. Detect regressions, repeats, and loops, defend deliberate pushback, handle a reviewer going offline, and decide when to stop."
     }
   ]
