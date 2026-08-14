@@ -1,6 +1,6 @@
 ---
 name: roborev-refine-and-polish
-description: A skill for tracking a multi-iteration roborev refine loop in a private ledger so you can detect regressions, repeats, and loops, defend deliberate pushback, handle a reviewer going offline, and decide when to stop. Use whenever running roborev refine for more than a couple of iterations, especially with multiple subscription-backed reviewers (claude-code + codex + pi), and ALWAYS when the user says "loop until convergent", "address every finding", "track progress", "iterate to convergence", or asks for budget/extension reasoning. Layer on top of /roborev-refine: that skill runs the loop, and this one supplies the structure that keeps a long loop honest.
+description: A generic skill that runs multiple roborev reviewers in a loop and tracks every finding in a private ledger, so you can detect regressions, repeats, and loops, defend deliberate pushback, handle a reviewer going offline, and decide when to stop. Use whenever running roborev refine for more than a couple of iterations, especially with multiple subscription-backed reviewers (claude-code + codex + pi), and ALWAYS when the user says "loop until convergent", "address every finding", "track progress", "iterate to convergence", or asks for budget/extension reasoning. Layer on top of /roborev-refine: that skill runs the loop, and this one runs the multiple reviewers and the ledger that tracks them.
 ---
 
 # Robo Refine and Polish

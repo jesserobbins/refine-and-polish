@@ -3,13 +3,13 @@
 This is for anyone who commits to open source and wants to hold a high
 quality bar before merging.
 
-It's a Claude Code skill that enhances [roborev](https://roborev.io) with an
-adversarial loop: review, fix, re-review, and keep going until independent
-reviewers stop finding real problems. A private ledger tracks every issue
-and every change along the way, so the loop actually converges instead of
-going in circles.
+It's a generic Claude Code skill that runs multiple
+[roborev](https://roborev.io) reviewers in a loop: review, fix, re-review,
+and keep going until independent reviewers stop finding real problems. A
+private ledger tracks every issue and every change along the way, so the
+loop actually converges instead of going in circles.
 
-> **Status: `0.1.0`.** The skill is proven and tested in practice, and the
+> **Status: `0.2.0`.** The skill is proven and tested in practice, and the
 > two-step marketplace install has been run end to end. Feedback is
 > welcome.
 

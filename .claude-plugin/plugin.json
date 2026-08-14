@@ -1,6 +1,6 @@
 {
   "name": "refine-and-polish",
-  "description": "A skill that enhances roborev with a private ledger for tracking a multi-iteration refine loop. Detect regressions, repeats, and loops, defend deliberate pushback, handle a reviewer going offline, and decide when to stop.",
+  "description": "A generic skill that runs multiple roborev reviewers in a loop and tracks every finding in a private ledger. Detect regressions, repeats, and loops, defend deliberate pushback, handle a reviewer going offline, and decide when to stop.",
   "version": "0.2.0",
   "author": {
     "name": "Jesse Robbins"
