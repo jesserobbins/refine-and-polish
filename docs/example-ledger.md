@@ -29,10 +29,10 @@ converged by fixing real problems and refuting false ones.**
 | 1 | claude-code | L | intro link points at a same-page anchor, not the tool's home | NEW | Fixed `71d9cfc` |
 | 1 | claude-code | L | install slug stale after a rename | NEW | Already fixed at HEAD (review ran on a pre-rename SHA) |
 | 1 | claude-code | L | quick-ref table omits a conditional remedy the prose carries | NEW | Deferred → pushback list |
-| 1 | codex | N/A | (whole diff) | N/A | "No issues found" (clean) |
-| 2 | claude-code | N/A | (full content) | N/A | "No issues found" |
+| 1 | codex | — | (whole diff) | — | "No issues found" (clean) |
+| 2 | claude-code | — | (full content) | — | "No issues found" |
 | 2 | codex | **L** | doc tells users to invoke a bare slash command that won't resolve | NEW | **Verified real** → Fixed `c0e17a2` |
-| 3 | claude-code | N/A | (full content) | N/A | "No issues found" (verified every CLI claim against the live tool) |
+| 3 | claude-code | — | (full content) | — | "No issues found" (verified every CLI claim against the live tool) |
 | 3 | codex | L | re-raises the slash line with an escalated, incorrect claim | LOOP of 2.codex.L | **Refuted with evidence** → pushback |
 
 ## Deliberate-pushback list

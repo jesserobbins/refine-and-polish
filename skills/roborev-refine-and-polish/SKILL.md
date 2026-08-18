@@ -134,17 +134,22 @@ This table is the most load-bearing artifact in the ledger. Columns:
   699"). This id is the index back into `roborev log <job>` and `roborev
   show <job>`. The ledger row stays a one-line distillation. The job holds
   the full text.
-- **Sev**: `H`, `M`, `L`, or `N/A` for a non-finding row. If an agent
-  errored or was unavailable this iteration, use `N/A` and record it. Keep
-  the coverage gap visible, not silent. Bold the High rows.
+- **Sev**: `H`, `M`, `L`, or a non-finding marker for a row with no
+  finding to type. Two different things can produce a non-finding row,
+  and they use different markers: a **clean pass** (the agent ran fine
+  and found nothing) uses `—`; an **unavailable or errored agent** uses
+  `N/A` and must be recorded so the coverage gap is visible, not silent.
+  Do not use `N/A` for a clean pass: it reads as a coverage gap when the
+  reviewer actually ran. Bold the High rows.
 - **Location**: file plus symbol, or a short description. Make it specific
   enough that the next iteration's reviewer output can be matched against it
   without rereading the diff.
 - **Type**: `NEW`, `PRE` (pre-existing on main), `REGRESSION of
   <iteration>.<agent>.<sev>` with the closing commit, `REPEAT of <…>`,
   `LOOP of <…>` (a fix that reappeared identically one iteration later; see
-  Type rules below), or `N/A` for a non-finding row (agent unavailable or
-  errored). This skill depends on the type column. Do not skip it.
+  Type rules below), `—` for a clean-pass row, or `N/A` for an
+  unavailable-or-errored-agent row. This skill depends on the type
+  column. Do not skip it.
 - **Status / Commit**: `Fixed <sha>`, `Fixed <sha> (+ regression
   test)`, `Deferred (see pushback list)`, or `Escalated to user`.
 
@@ -169,12 +174,17 @@ fastest way to see a full loop's worth of rows in context.
 These three words are not interchangeable. Get them right or the
 ledger lies.
 
-- **NEW**: this is the first appearance of this finding anywhere in the
-  loop.
+`REGRESSION` takes precedence over `NEW`: a finding that is technically
+its first appearance, but was caused by your own fix in a prior
+iteration, is a `REGRESSION`, not a `NEW`. Reserve `NEW` for a first
+appearance not attributable to a prior fix in this loop.
+
 - **REGRESSION of `<iteration>.<agent>.<sev>`**: *my fix in a prior iteration
   caused this*. Same code path, broken in a new way. The fix needs a
   regression test at the boundary that broke. If you keep regressing
   the same area, slow down. Use smaller commits and paired tests.
+- **NEW**: everything else that is a first appearance: not attributable
+  to a prior fix in this loop.
 
 `LOOP` and `REPEAT` are mutually exclusive by timing, not by cause: check
 whether the finding's prior status was "Fixed" in the *iteration
