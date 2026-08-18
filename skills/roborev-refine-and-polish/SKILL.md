@@ -473,7 +473,7 @@ top is not evidence that the loop needed to run longer.
 | Typing a recurrence | `REGRESSION` (your fix broke it) / `REPEAT` (defend) / `LOOP` (reconcile), see Type rules |
 | Reviewer says "verify, not a bug" | verify it, record the result (no-change is valid) |
 | Reviewer hands you a one-liner fix | fix the surface, not the literal line |
-| H/M clean, Lows keep dripping | budget stop; caption it as a reviewer tail, not "no Lows left" |
+| H/M clean, Lows keep dripping | default criterion: budget-exhaustion stop. Lows-pushback-by-default variant: genuine convergence. Either way, caption it as a reviewer tail, not "no Lows left" |
 | Deferred Lows you still want done | single follow-up commit, not a refine iteration; no re-review |
 
 ## See also
