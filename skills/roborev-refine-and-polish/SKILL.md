@@ -353,10 +353,15 @@ Record one row per iteration in the private ledger, using this table:
 | 1 | What you expect to fix and what must not recur | Job IDs, reviewers, and concise results | Findings fixed, deferred, refuted, or escalated | Regression hazards and expected re-raises |
 
 Write the plan before re-running the reviewers. Add the results as they land,
-including each agent's job id. Per-commit reviews and branch-level reviews go
-in the same row. An extra review inside an iteration (a reviewer retry or a
-re-run) is a `1b`-style sub-iteration, not a new iteration. Update the ledger
-table as part of writing the report row, not afterward.
+including each agent's job id and that job's scope (a single commit, or the
+full branch/history). Per-commit reviews and branch-level reviews can go in
+the same row, but only if each job's scope is recorded next to its id: a
+per-commit job does not stand in for full-branch coverage, and blending them
+without saying so can make a partial review look like it satisfied the
+convergence criterion for the whole branch. An extra review inside an
+iteration (a reviewer retry or a re-run) is a `1b`-style sub-iteration, not a
+new iteration. Update the ledger table as part of writing the report row,
+not afterward.
 
 When you act on a finding:
 
