@@ -206,8 +206,17 @@ appearance not attributable to a prior fix in this loop.
 
 `LOOP` and `REPEAT` are mutually exclusive by timing, not by cause: check
 whether the finding's prior status was "Fixed", and whether this is the
-*first review by this same agent* since that fix landed, whichever
-iteration that turns out to be. Both describe the *same underlying
+*first review by the agent reporting the recurrence* since that fix
+landed, whichever iteration that turns out to be. "That same agent"
+means the agent producing this row, the one seeing the recurrence, not
+necessarily the agent that originally reported the finding. This
+matters for a cross-agent case: if `claude-code` reports a finding,
+you fix it, and `codex` (which never reviewed that finding or that fix
+before) reports the same symptom at the same location, that is a
+`LOOP of <the original iteration>.claude-code.<sev>`, even though the
+row reporting it is `codex`'s: no review by `codex` has ever confirmed
+the fix held, so this is `codex`'s first look, and it disagrees with
+the fix. Both `LOOP` and `REPEAT` describe the *same underlying
 finding* recurring (same symptom, same location), just possibly worded
 differently or escalated by the reviewer the second time. A recurrence
 that is not the same underlying finding, a genuinely new or different

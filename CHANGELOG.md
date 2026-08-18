@@ -115,7 +115,8 @@ skill as a standalone, self-installing Claude Code plugin.
 
 ### Added
 
-- The `refine-and-polish` skill (`skills/refine-and-polish/SKILL.md`), which
+- The `refine-ledger` skill (`skills/refine-ledger/SKILL.md`, later renamed
+  to `roborev-refine-and-polish`), which
   holds the full method for tracking a multi-iteration roborev refine loop
   in a private ledger: typed findings (`NEW` / `REGRESSION` / `REPEAT` /
   `LOOP`), the deliberate-pushback list, reviewer-coverage caveats, an
