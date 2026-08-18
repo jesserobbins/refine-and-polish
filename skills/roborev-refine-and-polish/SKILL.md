@@ -165,24 +165,31 @@ ledger lies.
   caused this*. Same code path, broken in a new way. The fix needs a
   regression test at the boundary that broke. If you keep regressing
   the same area, slow down. Use smaller commits and paired tests.
-- **REPEAT of `<iteration>.<agent>.<sev>`**: same symptom at the same
-  location as a finding you already recorded, whether you fixed it or
-  deliberately deferred it. This is a *defend* signal, not a re-fix
-  signal. If the prior status was "Fixed," either the fix did not
-  actually land, the reviewer is seeing a snapshot that predates the fix,
-  or the reviewer is wrong: investigate before you change code. If the
-  prior status was "Deferred (see pushback list)," this is the expected
-  pushback re-raise: confirm the pushback reasoning still holds, and
-  leave the code unchanged.
-- **LOOP**: a *fixed* finding (never a deferred one) recurs identically
-  one iteration after the fix landed. This is how you discover that your
-  fix and the reviewer's expectation disagree on what "fixed" means. Stop
-  fixing and reconcile the difference, usually by writing a more pointed
-  test or by moving the finding to the deliberate-pushback list with
-  explicit reasoning. If reconciliation does not hold and the same
-  finding keeps coming back fixed-then-reflagged for three consecutive
-  iterations, that is the escalate-to-user signal in the budget section
-  below: more iterations will not help.
+These two are mutually exclusive by timing, not by cause: check whether the
+finding's prior status was "Fixed" in the *iteration immediately before
+this one*.
+
+- **LOOP**: a finding marked "Fixed" reappears identically in the very
+  next iteration's review, the first review to run against that fix. This
+  is how you discover that your fix and the reviewer's expectation
+  disagree on what "fixed" means. Stop fixing and reconcile the
+  difference, usually by writing a more pointed test or by moving the
+  finding to the deliberate-pushback list with explicit reasoning. If
+  reconciliation does not hold and the same finding keeps coming back
+  fixed-then-reflagged for three consecutive iterations, that is the
+  escalate-to-user signal in the budget section below: more iterations
+  will not help.
+- **REPEAT of `<iteration>.<agent>.<sev>`**: everything else — same
+  symptom, same location, as a finding you already recorded, but not the
+  immediate-next-iteration case above. This covers two situations: (a)
+  the prior status was "Deferred (see pushback list)": this is the
+  expected pushback re-raise, confirm the pushback reasoning still holds
+  and leave the code unchanged; (b) the prior status was "Fixed," but at
+  least one clean iteration ran against that fix before this recurrence:
+  either the reviewer is seeing a stale snapshot, the reviewer is wrong,
+  or something later reintroduced the symptom (investigate which, before
+  you change code — case (b) often turns out to be a regression from a
+  *different*, more recent commit, not the original fix failing).
 
 Why the distinction matters: a regression rate above about 30%
 iteration-to-iteration means your commits are too coarse, and need paired
@@ -324,10 +331,16 @@ genuinely unbounded supply, because each fix is itself new surface to
 critique. Tell-tale sign: the reviewer's own suggested one-liner draws
 the next iteration's finding (a `(x or "").strip()` that still throws on a
 non-string `x`). When H/M is clean and only this Low tail remains, stop
-on the **budget**. Say so plainly in the closing: "convergent at the
-iteration budget; the remaining Lows are a reviewer tail, not an
-exhausted surface," not "no Lows remain." An honest budget stop beats a
-false "clean" claim.
+on the **budget**, not the convergence criterion. Under the default
+criterion, an unresolved new Low still means the criterion is not met:
+this is a **budget-exhaustion stop** (see "Budget and extension" above),
+captioned honestly in the closing as such, not as "convergent." Under the
+**Lows pushback-by-default** variant, new Lows never gate convergence in
+the first place, so the same stop genuinely is convergence: caption it
+"convergent (Lows pushback-by-default): H/M clean, remaining Lows are a
+reviewer tail, not individually pushback-documented." Either way, say so
+plainly: "the remaining Lows are a reviewer tail, not an exhausted
+surface," never "no Lows remain."
 
 ## Per-iteration reporting
 
@@ -373,7 +386,11 @@ top is not evidence that the loop needed to run longer.
    subscription reviewers are live. Create the ledger file: header (with
    the live-reviewer line), the convergence criterion, an empty ledger
    table, and (if you already know of any) the deliberate-pushback list.
-   Commit the file before Iteration 1 starts.
+   If the ledger lives in a sibling private repo or a private repo's own
+   top-level `reviews/`, commit the file there before Iteration 1 starts.
+   If it lives in a gitignored `private/` subdir of an otherwise-public
+   repo, it is never committed at all: rely on the filesystem, not git
+   history, for that trajectory.
 2. **Run Iteration 1** via `/roborev-refine` (or its underlying commands).
    When findings land, add a row per finding to the ledger. Type each
    one (NEW or PRE for Iteration 1).
@@ -387,9 +404,12 @@ top is not evidence that the loop needed to run longer.
    the H/M trajectory, and a reviewer-coverage caveat if any reviewer
    was down. For exhaustion: the iteration-by-iteration table, plus what
    is still surfacing, ready to show the user.
-6. **Commit the ledger file at every iteration boundary.** This is private
-   notes, not public artifacts. Commits cost nothing, and the
-   reconstructable trajectory is the whole point.
+6. **Commit the ledger file at every iteration boundary, when it lives in
+   a repo that is committed at all** (a sibling private repo, or a private
+   repo's top-level `reviews/`). This is private notes, not public
+   artifacts, so commits cost nothing there, and the reconstructable
+   trajectory is the whole point. A gitignored `private/` subdir is never
+   committed, by construction; skip this step for that layout.
 
 ## Things to avoid
 
