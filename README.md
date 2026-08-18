@@ -9,7 +9,7 @@ and keep going until independent reviewers stop finding real problems. A
 private ledger tracks every issue and every change along the way, so the
 loop actually converges instead of going in circles.
 
-> **Status: `0.2.0`.** The skill is proven and tested in practice, and the
+> **Status: `0.2.1`.** The skill is proven and tested in practice, and the
 > two-step marketplace install has been run end to end. Feedback is
 > welcome.
 
