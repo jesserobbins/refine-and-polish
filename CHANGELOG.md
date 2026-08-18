@@ -8,11 +8,13 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- Added `LOOP` as a permitted ledger `Type` value, and drew a strict,
-  timing-based line between `LOOP` and `REPEAT`: `LOOP` is a fixed finding
-  recurring in the very next iteration, `REPEAT` is everything else
-  (a deferred finding's expected re-raise, or a fixed finding recurring
-  after at least one clean iteration in between).
+- Closed a gap where `LOOP` was described as a finding type in the Type
+  rules prose since `0.0.1-alpha` but was missing from the ledger's
+  formal, permitted `Type` value list. Also drew a strict, timing-based
+  line between `LOOP` and `REPEAT`: `LOOP` is a fixed finding recurring
+  in the very next iteration, `REPEAT` is everything else (a deferred
+  finding's expected re-raise, or a fixed finding recurring after at
+  least one clean iteration in between).
 - Added `N/A` as a permitted ledger `Type` value, for a non-finding row
   (agent unavailable or errored).
 - Clarified that the ledger's `private/` subdir location must be

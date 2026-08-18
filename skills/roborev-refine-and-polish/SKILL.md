@@ -65,8 +65,11 @@ Both jobs must target the identical scope, the same `--branch`, the same
 decision covers the whole intended target for every reviewer it rests on.
 A per-commit job from one agent does not stand in for a full-branch job
 from another: mixing scopes can make a partial review look like it
-satisfies two-agent convergence when it does not. Their findings land in
-the ledger under distinct `Agent` values. "claude-code flagged X but
+satisfies two-agent convergence when it does not. A relative selector like
+`--branch` resolves against HEAD at launch time, so launch both jobs
+back to back with no intervening commit: a commit landing between the two
+launches would make an identical selector cover different actual ranges.
+Their findings land in the ledger under distinct `Agent` values. "claude-code flagged X but
 codex did not" is signal, so keep them as separate jobs, not one merged
 run.
 
