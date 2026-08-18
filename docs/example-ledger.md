@@ -33,7 +33,7 @@ converged by fixing real problems and refuting false ones.**
 | 2 | claude-code | N/A | (full content) | N/A | "No issues found" |
 | 2 | codex | **L** | doc tells users to invoke a bare slash command that won't resolve | NEW | **Verified real** → Fixed `c0e17a2` |
 | 3 | claude-code | N/A | (full content) | N/A | "No issues found" (verified every CLI claim against the live tool) |
-| 3 | codex | L | re-raises the slash line with an escalated, incorrect claim | REPEAT of 2.codex.L | **Refuted with evidence** → pushback |
+| 3 | codex | L | re-raises the slash line with an escalated, incorrect claim | LOOP of 2.codex.L | **Refuted with evidence** → pushback |
 
 ## Deliberate-pushback list
 
