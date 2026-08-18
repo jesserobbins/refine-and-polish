@@ -65,13 +65,15 @@ honest about this history. codex *did* produce an Iteration 3 finding. The
 finding was refuted, not absent. A caption of "zero findings" misrepresents
 this iteration. "One finding, refuted with evidence" states the truth.
 
-**The two-reviewer payoff, concretely:**
+**The two-reviewer payoff, concretely.** This is the per-iteration report
+table the skill asks for, with each job's id and scope so the coverage
+claims below are checkable, not asserted:
 
-| Iteration | Reviewer results | Findings and decisions | Watch next |
-|-----------|------------------|------------------------|------------|
-| 1 | claude-code caught three Lows codex missed | Fixed or deferred them | Verify codex's independent coverage |
-| 2 | **codex caught one real bug claude-code missed** | Fixed the broken invocation instruction | Verify the command against live tooling |
-| 3 | Reviewers split on a refuted claim. Live-tool verification settled it | Recorded the false positive as pushback | Verify coverage and close |
+| Iteration | Plan | Reviewer results | Findings and decisions | Watch next |
+|-----------|------|------------------|------------------------|------------|
+| 1 | Baseline pass, full branch, both agents | claude-code job 701 (full branch): 3 Lows. codex job 702 (full branch): clean | claude-code caught three Lows codex missed; fixed or deferred them | Verify codex's independent coverage |
+| 2 | Re-review after Iteration 1 fixes, full branch, both agents | claude-code job 703 (full branch): clean. **codex job 704 (full branch): 1 Low, a real bug claude-code missed** | Fixed the broken invocation instruction | Verify the command against live tooling |
+| 3 | Re-review after Iteration 2 fix, full branch, both agents | claude-code job 705 (full branch): clean, verified every CLI claim live. codex job 706 (full branch): 1 Low, a refuted claim | Recorded the false positive as pushback | Verify coverage and close |
 
 With a single reviewer, the loop ships the broken instruction. This result is
 the argument for two separate reviewer jobs, because their disagreement is
