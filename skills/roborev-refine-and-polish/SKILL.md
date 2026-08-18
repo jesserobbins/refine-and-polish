@@ -132,9 +132,10 @@ This table is the most load-bearing artifact in the ledger. Columns:
   enough that the next iteration's reviewer output can be matched against it
   without rereading the diff.
 - **Type**: `NEW`, `PRE` (pre-existing on main), `REGRESSION of
-  <iteration>.<agent>.<sev>` with the closing commit, `REPEAT of <…>`, or
+  <iteration>.<agent>.<sev>` with the closing commit, `REPEAT of <…>`,
   `LOOP of <…>` (a fix that reappeared identically one iteration later; see
-  Type rules below). This skill depends on the type column. Do not skip it.
+  Type rules below), or `N/A` for a non-finding row (agent unavailable or
+  errored). This skill depends on the type column. Do not skip it.
 - **Status / Commit**: `Fixed <sha>`, `Fixed <sha> (+ regression
   test)`, `Deferred (see pushback list)`, or `Escalated to user`.
 
@@ -165,9 +166,10 @@ ledger lies.
   caused this*. Same code path, broken in a new way. The fix needs a
   regression test at the boundary that broke. If you keep regressing
   the same area, slow down. Use smaller commits and paired tests.
-These two are mutually exclusive by timing, not by cause: check whether the
-finding's prior status was "Fixed" in the *iteration immediately before
-this one*.
+
+`LOOP` and `REPEAT` are mutually exclusive by timing, not by cause: check
+whether the finding's prior status was "Fixed" in the *iteration
+immediately before this one*.
 
 - **LOOP**: a finding marked "Fixed" reappears identically in the very
   next iteration's review, the first review to run against that fix. This
