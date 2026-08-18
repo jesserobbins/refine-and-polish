@@ -56,20 +56,25 @@ agent (`roborev config get default_agent` → usually `claude-code`).
 agent, each its own job:
 
 ```bash
-roborev review --branch --agent claude-code --wait
-roborev review --branch --agent codex --wait
+SHA=$(git rev-parse HEAD)
+roborev review --since bcd8346024 --sha "$SHA" --agent claude-code --wait
+roborev review --since bcd8346024 --sha "$SHA" --agent codex --wait
 ```
 
-Both jobs must target the identical scope, the same `--branch`, the same
-`--since <commit>`, or the same commit range, so that a convergence
-decision covers the whole intended target for every reviewer it rests on.
-A per-commit job from one agent does not stand in for a full-branch job
+Both jobs must target the identical scope, so that a convergence decision
+covers the whole intended target for every reviewer it rests on. A
+per-commit job from one agent does not stand in for a full-branch job
 from another: mixing scopes can make a partial review look like it
-satisfies two-agent convergence when it does not. A relative selector like
-`--branch` resolves against HEAD at launch time, so launch both jobs
-back to back with no intervening commit: a commit landing between the two
-launches would make an identical selector cover different actual ranges.
-Their findings land in the ledger under distinct `Agent` values. "claude-code flagged X but
+satisfies two-agent convergence when it does not. Pin an explicit commit,
+not a relative selector: `--branch` alone resolves against HEAD at
+launch time, and `--wait` blocks until the job finishes, so two
+sequential `--branch` calls can end up reviewing different ranges if
+anything lands on the branch in between (that gap can be minutes with
+`--wait`, not just the moment between two launches). Resolving the SHA
+once and passing it to both jobs removes the timing dependency
+entirely: both calls review that exact revision, no matter how long
+either job takes or what lands afterward. Their findings land in the
+ledger under distinct `Agent` values. "claude-code flagged X but
 codex did not" is signal, so keep them as separate jobs, not one merged
 run.
 
@@ -197,27 +202,32 @@ symptom on the same code path, is not `LOOP` or `REPEAT` at all: it is
 recurrence to be a word-for-word match: "identical" means the same
 finding, not the same sentence.
 
-- **LOOP**: the same finding, marked "Fixed," recurs in the very
-  next iteration's review, the first review to run against that fix. This
-  is how you discover that your fix and the reviewer's expectation
-  disagree on what "fixed" means. Stop fixing and reconcile the
-  difference, usually by writing a more pointed test or by moving the
-  finding to the deliberate-pushback list with explicit reasoning. If
-  reconciliation does not hold and the same finding keeps coming back
-  fixed-then-reflagged for three consecutive iterations, that is the
-  escalate-to-user signal in the budget section below: more iterations
-  will not help.
+- **LOOP**: the same finding, marked "Fixed," recurs in **the first
+  review by that same agent to run against that fix**, whichever
+  iteration that is. Usually that is the very next iteration, but if the
+  agent was unavailable for an iteration or two after the fix landed
+  (see "When a reviewer is unavailable" below), its first review back is
+  still the LOOP check, not a REPEAT check, since no review by that agent
+  ever confirmed the fix held. This is how you discover that your fix and
+  the reviewer's expectation disagree on what "fixed" means. Stop fixing
+  and reconcile the difference, usually by writing a more pointed test or
+  by moving the finding to the deliberate-pushback list with explicit
+  reasoning. If reconciliation does not hold and the same finding keeps
+  coming back fixed-then-reflagged for three consecutive reviews by that
+  agent, that is the escalate-to-user signal in the budget section below:
+  more iterations will not help.
 - **REPEAT of `<iteration>.<agent>.<sev>`**: everything else. Same
   symptom, same location, as a finding you already recorded, but not the
-  immediate-next-iteration case above. This covers two situations: (a)
+  first-review-by-that-agent case above. This covers two situations: (a)
   the prior status was "Deferred (see pushback list)": this is the
   expected pushback re-raise, confirm the pushback reasoning still holds
-  and leave the code unchanged; (b) the prior status was "Fixed," but at
-  least one clean iteration ran against that fix before this recurrence:
-  either the reviewer is seeing a stale snapshot, the reviewer is wrong,
-  or something later reintroduced the symptom. Investigate which, before
-  you change code. Case (b) often turns out to be a regression from a
-  *different*, more recent commit, not the original fix failing.
+  and leave the code unchanged; (b) the prior status was "Fixed," and at
+  least one review by that same agent already ran against that fix
+  without re-raising it, before this recurrence: either the reviewer is
+  seeing a stale snapshot, the reviewer is wrong, or something later
+  reintroduced the symptom. Investigate which, before you change code.
+  Case (b) often turns out to be a regression from a *different*, more
+  recent commit, not the original fix failing.
 
 Why the distinction matters: a regression rate above about 30%
 iteration-to-iteration means your commits are too coarse, and need paired
@@ -297,6 +307,12 @@ following:
 - Trade real cost (architectural change, performance, schema
   migration) against a Low-severity hardening with no triggering
   scenario on this branch.
+- Turn out, on verification, to be false: you checked the code, the
+  call sites, or the live tool, and the claimed problem does not exist.
+  Record the evidence, not a code change. This is not a design pushback
+  (there is no tradeoff to defend), but it belongs on the same list and
+  counts the same way toward the convergence criterion, since the
+  finding is fully resolved, just not by editing code.
 
 A finding does **not** belong on the pushback list because the fix
 "feels like effort." Fix cosmetic and Low findings too when the fix is
