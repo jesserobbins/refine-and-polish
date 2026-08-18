@@ -57,12 +57,18 @@ agent, each its own job:
 
 ```bash
 roborev review --branch --agent claude-code --wait
-roborev review --branch --agent codex --wait      # or --since <commit>
+roborev review --branch --agent codex --wait
 ```
 
-Both jobs review the same scope. Their findings land in the ledger under
-distinct `Agent` values. "claude-code flagged X but codex did not" is signal,
-so keep them as separate jobs, not one merged run.
+Both jobs must target the identical scope, the same `--branch`, the same
+`--since <commit>`, or the same commit range, so that a convergence
+decision covers the whole intended target for every reviewer it rests on.
+A per-commit job from one agent does not stand in for a full-branch job
+from another: mixing scopes can make a partial review look like it
+satisfies two-agent convergence when it does not. Their findings land in
+the ledger under distinct `Agent` values. "claude-code flagged X but
+codex did not" is signal, so keep them as separate jobs, not one merged
+run.
 
 **Never restore a downed reviewer through the API.** A reviewer's subscription
 auth can break mid-loop, most often codex's CLI rejecting under a

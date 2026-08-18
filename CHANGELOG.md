@@ -4,6 +4,29 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Added `LOOP` as a permitted ledger `Type` value, and drew a strict,
+  timing-based line between `LOOP` and `REPEAT`: `LOOP` is a fixed finding
+  recurring in the very next iteration, `REPEAT` is everything else
+  (a deferred finding's expected re-raise, or a fixed finding recurring
+  after at least one clean iteration in between).
+- Added `N/A` as a permitted ledger `Type` value, for a non-finding row
+  (agent unavailable or errored).
+- Clarified that the ledger's `private/` subdir location must be
+  gitignored, not merely a subdirectory, and that a gitignored ledger is
+  never committed (adjusted the workflow's commit steps to match).
+- Required recording each review job's scope (single commit vs. full
+  branch/history) when its row shares a report table entry with another
+  job, and required every reviewer job used for a convergence decision to
+  target the identical scope.
+- Distinguished a true budget-exhaustion stop from a genuine convergence
+  stop in the Low-tail guidance: under the default criterion an
+  unresolved new Low is budget exhaustion, not convergence; under the
+  Lows-pushback-by-default variant it is convergence.
+
 ## [0.2.1] - 2026-08-14
 
 ### Changed
