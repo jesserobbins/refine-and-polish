@@ -56,23 +56,25 @@ agent (`roborev config get default_agent` → usually `claude-code`).
 agent, each its own job:
 
 ```bash
-SHA=$(git rev-parse HEAD)
-roborev review --since bcd8346024 --sha "$SHA" --agent claude-code --wait
-roborev review --since bcd8346024 --sha "$SHA" --agent codex --wait
+BASE=$(git merge-base main HEAD)
+HEAD_SHA=$(git rev-parse HEAD)
+roborev review "$BASE" "$HEAD_SHA" --agent claude-code --wait
+roborev review "$BASE" "$HEAD_SHA" --agent codex --wait
 ```
 
 Both jobs must target the identical scope, so that a convergence decision
 covers the whole intended target for every reviewer it rests on. A
 per-commit job from one agent does not stand in for a full-branch job
 from another: mixing scopes can make a partial review look like it
-satisfies two-agent convergence when it does not. Pin an explicit commit,
-not a relative selector: `--branch` alone resolves against HEAD at
-launch time, and `--wait` blocks until the job finishes, so two
-sequential `--branch` calls can end up reviewing different ranges if
-anything lands on the branch in between (that gap can be minutes with
-`--wait`, not just the moment between two launches). Resolving the SHA
-once and passing it to both jobs removes the timing dependency
-entirely: both calls review that exact revision, no matter how long
+satisfies two-agent convergence when it does not. Pin an explicit commit
+range with positional arguments (`roborev review <start> <end>`), not a
+relative selector: `--branch` alone resolves against HEAD at launch
+time, and `--wait` blocks until the job finishes, so two sequential
+`--branch` calls can end up reviewing different ranges if anything
+lands on the branch in between (that gap can be minutes with `--wait`,
+not just the moment between two launches). Resolving both ends once and
+passing the same pair to both jobs removes the timing dependency
+entirely: both calls review that exact range, no matter how long
 either job takes or what lands afterward. Their findings land in the
 ledger under distinct `Agent` values. "claude-code flagged X but
 codex did not" is signal, so keep them as separate jobs, not one merged
@@ -360,8 +362,8 @@ continue**. Reassess:
   five more, capped at ten). Record the extension decision in the ledger
   so the trajectory is visible.
 - If the same finding is fixed and re-flagged across three consecutive
-  iterations, this is a loop. Escalate to the user with the
-  per-iteration trajectory. More iterations will not help.
+  reviews by the same agent, this is a loop. Escalate to the user with
+  the per-iteration trajectory. More iterations will not help.
 - If the regression rate trends up across the extended iterations, slow
   down. Use smaller commits and paired regression-boundary tests. A worse
   trajectory at Iteration 7 than at Iteration 3 means the loop is no longer
@@ -483,7 +485,7 @@ top is not evidence that the loop needed to run longer.
 | Situation | What to do |
 |-----------|------------|
 | Start of loop | `roborev check-agents`; record live reviewers in the header |
-| Run two reviewers | `roborev review --branch --agent claude-code` and `--agent codex`, separate jobs |
+| Run two reviewers | `roborev review <start> <end>` with the same resolved range, `--agent claude-code` and `--agent codex`, separate jobs |
 | Reviewer errored / auth-broke | `N/A` row, "unavailable"; one retry as `1b`; waive + coverage caveat. **No API key.** |
 | roborev verdict = Fail, only Lows | roborev fails on any finding; your criterion governs, not its verdict |
 | Typing a recurrence | `REGRESSION` (your fix broke it) / `REPEAT` (defend) / `LOOP` (reconcile), see Type rules |

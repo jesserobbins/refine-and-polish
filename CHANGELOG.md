@@ -10,11 +10,12 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Closed a gap where `LOOP` was described as a finding type in the Type
   rules prose since `0.0.1-alpha` but was missing from the ledger's
-  formal, permitted `Type` value list. Also drew a strict, timing-based
-  line between `LOOP` and `REPEAT`: `LOOP` is a fixed finding recurring
-  in the very next iteration, `REPEAT` is everything else (a deferred
-  finding's expected re-raise, or a fixed finding recurring after at
-  least one clean iteration in between).
+  formal, permitted `Type` value list. Also drew a line between `LOOP`
+  and `REPEAT`: `LOOP` is a fixed finding recurring in the first review
+  by the same agent to run against that fix, `REPEAT` is everything else
+  (a deferred finding's expected re-raise, or a fixed finding recurring
+  after at least one review by that agent already ran against the fix
+  without re-raising it).
 - Added `N/A` as a permitted ledger `Type` value, for a non-finding row
   (agent unavailable or errored). **Breaking for existing ledgers:** the
   `Sev` column's non-finding marker also changed. A clean pass (agent
@@ -31,6 +32,20 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   escalated by the reviewer the second time, not only an identical
   re-statement. A genuinely different symptom on the same code path is
   `REGRESSION`, not `LOOP` or `REPEAT`.
+- Anchored `LOOP` and `REPEAT` on the first review by the same agent to
+  run against a fix, not on iteration count: a reviewer unavailable for
+  one or more iterations after a fix landed used to make its eventual
+  first review back match neither type. The escalation rule (three
+  consecutive recurrences) is now stated the same way, for consistency.
+- Added a fourth admission criterion to the deliberate-pushback list for
+  a finding verified false on investigation: record the evidence, not a
+  code change. It counts toward convergence the same way a design
+  pushback does.
+- Fixed the two-reviewer examples (README, skill, quick reference), which
+  ran sequential `--branch --wait` calls, a real race that could review
+  different ranges if a commit landed between launches. They now resolve
+  a commit range once and pass the identical `<start> <end>` pair to both
+  jobs.
 - Clarified that the ledger's `private/` subdir location must be
   gitignored, not merely a subdirectory, and that a gitignored ledger is
   never committed (adjusted the workflow's commit steps to match).

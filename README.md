@@ -47,11 +47,13 @@ ledger is what keeps it from getting lost.
 
 ```sh
 roborev check-agents                                  # which reviewers are live
-roborev review --branch --agent claude-code --wait
-roborev review --branch --agent codex --wait
+BASE=$(git merge-base main HEAD)
+HEAD_SHA=$(git rev-parse HEAD)
+roborev review "$BASE" "$HEAD_SHA" --agent claude-code --wait
+roborev review "$BASE" "$HEAD_SHA" --agent codex --wait
 ```
 
-1. Run each reviewer as its own job, against the same branch.
+1. Run each reviewer as its own job, against the same resolved commit range.
 2. Log every finding in the ledger, typed and dated.
 3. Fix the real findings. Defend, in writing, the ones you won't fix.
 4. Re-review. Repeat until findings run out or you hit your iteration
