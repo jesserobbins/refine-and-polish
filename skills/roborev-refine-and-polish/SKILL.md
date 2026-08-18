@@ -38,8 +38,8 @@ the commands in this skill do not run.
 
 This skill reads only roborev review findings. Reviewer agents generate
 these findings from this repository's code diffs and job logs. You get
-them with explicit commands: `roborev review`, `roborev log <job>`, and
-`roborev show <job>`. Each command names a specific job ID.
+them with explicit commands: `roborev review` creates a job and returns its
+ID, and `roborev log <job>` and `roborev show <job>` reference that ID.
 
 This skill does not monitor, poll, or read any other feed, queue, or
 text channel, for example issue trackers, chat, email, or web content.
