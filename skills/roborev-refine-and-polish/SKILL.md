@@ -188,9 +188,16 @@ appearance not attributable to a prior fix in this loop.
 
 `LOOP` and `REPEAT` are mutually exclusive by timing, not by cause: check
 whether the finding's prior status was "Fixed" in the *iteration
-immediately before this one*.
+immediately before this one*. Both describe the *same underlying
+finding* recurring (same symptom, same location), just possibly worded
+differently or escalated by the reviewer the second time. A recurrence
+that is not the same underlying finding, a genuinely new or different
+symptom on the same code path, is not `LOOP` or `REPEAT` at all: it is
+`REGRESSION`, which already takes precedence above. Do not require the
+recurrence to be a word-for-word match: "identical" means the same
+finding, not the same sentence.
 
-- **LOOP**: a finding marked "Fixed" reappears identically in the very
+- **LOOP**: the same finding, marked "Fixed," recurs in the very
   next iteration's review, the first review to run against that fix. This
   is how you discover that your fix and the reviewer's expectation
   disagree on what "fixed" means. Stop fixing and reconcile the

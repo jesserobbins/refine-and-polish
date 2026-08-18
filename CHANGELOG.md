@@ -16,7 +16,21 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   finding's expected re-raise, or a fixed finding recurring after at
   least one clean iteration in between).
 - Added `N/A` as a permitted ledger `Type` value, for a non-finding row
-  (agent unavailable or errored).
+  (agent unavailable or errored). **Breaking for existing ledgers:** the
+  `Sev` column's non-finding marker also changed. A clean pass (agent
+  ran, found nothing) now uses `—`, and `N/A` is reserved strictly for an
+  unavailable or errored agent. A `—` row in a ledger written before this
+  change meant "unavailable"; retype any such row to `N/A` before relying
+  on `—` to mean "clean" in that ledger.
+- Gave `REGRESSION` precedence over `NEW`: a finding that is technically
+  its first appearance, but was caused by your own fix in a prior
+  iteration, is typed `REGRESSION`, not `NEW`.
+- Closed a gap where a same-finding recurrence that was not a
+  word-for-word match fell into neither `LOOP` nor `REPEAT`: both now
+  cover the same underlying finding recurring, whether reworded or
+  escalated by the reviewer the second time, not only an identical
+  re-statement. A genuinely different symptom on the same code path is
+  `REGRESSION`, not `LOOP` or `REPEAT`.
 - Clarified that the ledger's `private/` subdir location must be
   gitignored, not merely a subdirectory, and that a gitignored ledger is
   never committed (adjusted the workflow's commit steps to match).
@@ -79,11 +93,6 @@ been run end to end.
 - Use `Iteration` consistently and record per-iteration plans and results in a
   table.
 
-[0.2.1]: https://github.com/jesserobbins/refine-and-polish/releases/tag/v0.2.1
-[0.2.0]: https://github.com/jesserobbins/refine-and-polish/releases/tag/v0.2.0
-[0.1.0]: https://github.com/jesserobbins/refine-and-polish/releases/tag/v0.1.0
-[0.0.2-alpha]: https://github.com/jesserobbins/refine-and-polish/releases/tag/v0.0.2-alpha
-
 ## [0.0.1-alpha] - 2026-06-25
 
 This is the first alpha release. It packages the **Robo Refine and Polish**
@@ -113,4 +122,9 @@ skill as a standalone, self-installing Claude Code plugin.
 - Assumes subscription-backed reviewers. The "reviewer unavailable" handling
   refuses API-key fallback on purpose.
 
+[Unreleased]: https://github.com/jesserobbins/refine-and-polish/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/jesserobbins/refine-and-polish/releases/tag/v0.2.1
+[0.2.0]: https://github.com/jesserobbins/refine-and-polish/releases/tag/v0.2.0
+[0.1.0]: https://github.com/jesserobbins/refine-and-polish/releases/tag/v0.1.0
+[0.0.2-alpha]: https://github.com/jesserobbins/refine-and-polish/releases/tag/v0.0.2-alpha
 [0.0.1-alpha]: https://github.com/jesserobbins/refine-and-polish/releases/tag/v0.0.1-alpha
