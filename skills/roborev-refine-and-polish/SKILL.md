@@ -75,7 +75,11 @@ lands on the branch in between (that gap can be minutes with `--wait`,
 not just the moment between two launches). Resolving both ends once and
 passing the same pair to both jobs removes the timing dependency
 entirely: both calls review that exact range, no matter how long
-either job takes or what lands afterward. Their findings land in the
+either job takes or what lands afterward. The positional form is
+inclusive of `<start>` (`<start>^..<end>`), unlike `--since <commit>`,
+which excludes it: do not combine `--since` with `--sha` expecting it to
+pin the endpoint, since `--sha` is silently ignored whenever `--since`
+is set. Their findings land in the
 ledger under distinct `Agent` values. "claude-code flagged X but
 codex did not" is signal, so keep them as separate jobs, not one merged
 run.
@@ -153,8 +157,8 @@ This table is the most load-bearing artifact in the ledger. Columns:
   without rereading the diff.
 - **Type**: `NEW`, `PRE` (pre-existing on main), `REGRESSION of
   <iteration>.<agent>.<sev>` with the closing commit, `REPEAT of <…>`,
-  `LOOP of <…>` (a fix that reappeared identically one iteration later; see
-  Type rules below), `—` for a clean-pass row, or `N/A` for an
+  `LOOP of <…>` (a fix re-raised by the first review from that agent
+  after it landed; see Type rules below), `—` for a clean-pass row, or `N/A` for an
   unavailable-or-errored-agent row. This skill depends on the type
   column. Do not skip it.
 - **Status / Commit**: `Fixed <sha>`, `Fixed <sha> (+ regression
@@ -194,8 +198,9 @@ appearance not attributable to a prior fix in this loop.
   to a prior fix in this loop.
 
 `LOOP` and `REPEAT` are mutually exclusive by timing, not by cause: check
-whether the finding's prior status was "Fixed" in the *iteration
-immediately before this one*. Both describe the *same underlying
+whether the finding's prior status was "Fixed", and whether this is the
+*first review by this same agent* since that fix landed, whichever
+iteration that turns out to be. Both describe the *same underlying
 finding* recurring (same symptom, same location), just possibly worded
 differently or escalated by the reviewer the second time. A recurrence
 that is not the same underlying finding, a genuinely new or different
