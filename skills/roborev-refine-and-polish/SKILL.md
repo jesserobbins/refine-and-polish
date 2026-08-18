@@ -181,7 +181,7 @@ immediately before this one*.
   fixed-then-reflagged for three consecutive iterations, that is the
   escalate-to-user signal in the budget section below: more iterations
   will not help.
-- **REPEAT of `<iteration>.<agent>.<sev>`**: everything else — same
+- **REPEAT of `<iteration>.<agent>.<sev>`**: everything else. Same
   symptom, same location, as a finding you already recorded, but not the
   immediate-next-iteration case above. This covers two situations: (a)
   the prior status was "Deferred (see pushback list)": this is the
@@ -189,9 +189,9 @@ immediately before this one*.
   and leave the code unchanged; (b) the prior status was "Fixed," but at
   least one clean iteration ran against that fix before this recurrence:
   either the reviewer is seeing a stale snapshot, the reviewer is wrong,
-  or something later reintroduced the symptom (investigate which, before
-  you change code — case (b) often turns out to be a regression from a
-  *different*, more recent commit, not the original fix failing).
+  or something later reintroduced the symptom. Investigate which, before
+  you change code. Case (b) often turns out to be a regression from a
+  *different*, more recent commit, not the original fix failing.
 
 Why the distinction matters: a regression rate above about 30%
 iteration-to-iteration means your commits are too coarse, and need paired
