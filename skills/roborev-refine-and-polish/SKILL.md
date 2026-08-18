@@ -128,8 +128,9 @@ This table is the most load-bearing artifact in the ledger. Columns:
   enough that the next iteration's reviewer output can be matched against it
   without rereading the diff.
 - **Type**: `NEW`, `PRE` (pre-existing on main), `REGRESSION of
-  <iteration>.<agent>.<sev>` with the closing commit, or `REPEAT of <…>`.
-  This skill depends on the type column. Do not skip it.
+  <iteration>.<agent>.<sev>` with the closing commit, `REPEAT of <…>`, or
+  `LOOP of <…>` (a fix that reappeared identically one iteration later; see
+  Type rules below). This skill depends on the type column. Do not skip it.
 - **Status / Commit**: `Fixed <sha>`, `Fixed <sha> (+ regression
   test)`, `Deferred (see pushback list)`, or `Escalated to user`.
 
