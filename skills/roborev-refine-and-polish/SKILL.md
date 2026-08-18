@@ -56,10 +56,12 @@ agent (`roborev config get default_agent` → usually `claude-code`).
 agent, each its own job:
 
 ```bash
-BASE=$(git merge-base main HEAD)
+BASE_BRANCH=<your-base-branch>  # e.g. main
+MERGE_BASE=$(git merge-base "$BASE_BRANCH" HEAD)
+START=$(git rev-list --reverse "$MERGE_BASE"..HEAD | head -1)
 HEAD_SHA=$(git rev-parse HEAD)
-roborev review "$BASE" "$HEAD_SHA" --agent claude-code --wait
-roborev review "$BASE" "$HEAD_SHA" --agent codex --wait
+roborev review "$START" "$HEAD_SHA" --agent claude-code --wait
+roborev review "$START" "$HEAD_SHA" --agent codex --wait
 ```
 
 Both jobs must target the identical scope, so that a convergence decision
@@ -76,9 +78,14 @@ not just the moment between two launches). Resolving both ends once and
 passing the same pair to both jobs removes the timing dependency
 entirely: both calls review that exact range, no matter how long
 either job takes or what lands afterward. The positional form is
-inclusive of `<start>` (`<start>^..<end>`), unlike `--since <commit>`,
-which excludes it: do not combine `--since` with `--sha` expecting it to
-pin the endpoint, since `--sha` is silently ignored whenever `--since`
+inclusive of `<start>` (`<start>^..<end>`), so pass the first commit
+*unique to your branch*, not the merge-base itself: the merge-base is
+shared history with the base branch, and including it can report
+pre-existing, unrelated findings as if they belonged to this review.
+`git rev-list --reverse "$MERGE_BASE"..HEAD | head -1` resolves that
+first-unique commit generically, for any base branch. Do not combine
+`--since` with `--sha` expecting it to pin the endpoint, since `--sha`
+is silently ignored whenever `--since`
 is set. Their findings land in the
 ledger under distinct `Agent` values. "claude-code flagged X but
 codex did not" is signal, so keep them as separate jobs, not one merged
