@@ -83,10 +83,14 @@ mid-loop surprise into a known constraint.
 
 Keep one Markdown file per refine loop in the project's private notes
 location, `reviews/<pr-or-branch-slug>.md`. Where `reviews/` lives depends
-on the project layout: a sibling `<project>-private/` repo, or a `private/`
-subdir. For a repo that is itself private, use a top-level `reviews/`
-directory instead. Follow the project's instructions file (CLAUDE.md or
-AGENTS.md). This file is private. Never link to it from a public PR.
+on the project layout: a sibling `<project>-private/` repo that is itself
+never published, or a `private/` subdir that is gitignored (never committed)
+in an otherwise-public repo. For a repo that is itself private, use a
+top-level `reviews/` directory instead. In every case, the ledger must live
+somewhere that is never published: a subdirectory alone does not make
+content private if it gets committed to a public repo. Follow the project's
+instructions file (CLAUDE.md or AGENTS.md). This file is private. Never link
+to it from a public PR.
 
 The file holds these, in this order:
 
@@ -162,16 +166,23 @@ ledger lies.
   regression test at the boundary that broke. If you keep regressing
   the same area, slow down. Use smaller commits and paired tests.
 - **REPEAT of `<iteration>.<agent>.<sev>`**: same symptom at the same
-  location as a finding you already fixed. This is a *defend* signal,
-  not a re-fix signal. Either the prior fix did not actually land, the
-  reviewer is seeing a snapshot that predates the fix, or the
-  reviewer is wrong. Investigate before you change code.
-- **LOOP**: a finding closed in Iteration N reappears identically in
-  Iteration N+1. This is how you discover that your fix and the
-  reviewer's expectation disagree on what "fixed" means. Stop fixing and
-  reconcile the difference, usually by writing a more pointed test or by
-  moving the finding to the deliberate-pushback list with explicit
-  reasoning.
+  location as a finding you already recorded, whether you fixed it or
+  deliberately deferred it. This is a *defend* signal, not a re-fix
+  signal. If the prior status was "Fixed," either the fix did not
+  actually land, the reviewer is seeing a snapshot that predates the fix,
+  or the reviewer is wrong: investigate before you change code. If the
+  prior status was "Deferred (see pushback list)," this is the expected
+  pushback re-raise: confirm the pushback reasoning still holds, and
+  leave the code unchanged.
+- **LOOP**: a *fixed* finding (never a deferred one) recurs identically
+  one iteration after the fix landed. This is how you discover that your
+  fix and the reviewer's expectation disagree on what "fixed" means. Stop
+  fixing and reconcile the difference, usually by writing a more pointed
+  test or by moving the finding to the deliberate-pushback list with
+  explicit reasoning. If reconciliation does not hold and the same
+  finding keeps coming back fixed-then-reflagged for three consecutive
+  iterations, that is the escalate-to-user signal in the budget section
+  below: more iterations will not help.
 
 Why the distinction matters: a regression rate above about 30%
 iteration-to-iteration means your commits are too coarse, and need paired
